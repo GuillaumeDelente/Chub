@@ -1,18 +1,28 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="ChubTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="ChubTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
 
-        <item name="searchViewStyle">@style/ChubSearchViewStyle</item>
+        <item name="actionBarStyle">@style/DialtactsActionBarStyle</item>
     </style>
 
-    <style name="ChubSearchViewStyle" parent="Widget.AppCompat.SearchView">
-        <item name="colorControlNormal">#c5c5c5</item>
-        <item name="colorControlActivated">#c5c5c5</item>
-        <item name="colorControlHighlight">#c5c5c5</item>
+    <style name="DialtactsActionBarStyle" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/actionbar_background_color</item>
+        <item name="android:titleTextStyle">@style/DialtactsActionBarTitleText</item>
+        <item name="android:height">@dimen/action_bar_height</item>
+        <item name="android:elevation">@dimen/action_bar_elevation</item>
+        <!-- Empty icon -->
+        <item name="android:icon">@android:color/transparent</item>
+        <!-- Shift the title text to the right -->
+        <item name="android:contentInsetStart">@dimen/actionbar_contentInsetStart</item>
+    </style>
+
+    <!-- Text in the action bar at the top of the screen -->
+    <style name="DialtactsActionBarTitleText" parent="RtlOverlay.Widget.AppCompat.ActionBar.TitleItem">
+        <item name="android:textColor">@color/actionbar_text_color</item>
     </style>
 
 </resources>
