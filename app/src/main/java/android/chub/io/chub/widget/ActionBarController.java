@@ -8,6 +8,7 @@ import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.animation.AnimUtils;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
 /**
@@ -43,7 +44,7 @@ public class ActionBarController {
         public boolean hasSearchQuery();
         public boolean shouldShowActionBar();
         public int getActionBarHeight();
-        public ActionBar getActionBar();
+        public Toolbar getToolbar();
     }
 
     public ActionBarController(ActivityUi activityUi, SearchEditTextLayout searchBox) {
@@ -163,14 +164,15 @@ public class ActionBarController {
 
     public void setHideOffset(int offset) {
         mIsActionBarSlidUp = offset >= mActivityUi.getActionBarHeight();
-        mActivityUi.getActionBar().setHideOffset(offset);
+        //mActivityUi.getToolbar().setHideOffset(offset);
     }
 
     /**
      * @return The offset the action bar is being translated upwards by
      */
     public int getHideOffset() {
-        return mActivityUi.getActionBar().getHideOffset();
+        return 0;
+        //return mActivityUi.getToolbar().getHideOffset();
     }
 
     /**

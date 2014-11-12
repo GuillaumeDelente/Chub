@@ -81,30 +81,17 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf>
-          <file leaf-file-name="MapFragment.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/MapFragment.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="-1.6538461" vertical-offset="1007" max-vertical-offset="4995">
-                  <caret line="70" column="56" selection-start-line="70" selection-start-column="56" selection-end-line="70" selection-end-column="56" />
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                    <element signature="e#3065#3119#0" expanded="true" />
-                    <element signature="e#4637#4688#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="search_edittext.xml" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="search_edittext.xml" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/search_edittext.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.60674155" vertical-offset="510" max-vertical-offset="1335">
-                  <caret line="52" column="53" selection-start-line="52" selection-start-column="53" selection-end-line="52" selection-end-column="53" />
+                <state vertical-scroll-proportion="-11.481482" vertical-offset="890" max-vertical-offset="1335">
+                  <caret line="80" column="36" selection-start-line="80" selection-start-column="36" selection-end-line="80" selection-end-column="36" />
                   <folding>
                     <element signature="e#369#395#0" expanded="true" />
                     <element signature="e#430#459#0" expanded="true" />
                     <element signature="e#492#525#0" expanded="true" />
                     <element signature="e#559#592#0" expanded="true" />
+                    <element signature="e#2516#2541#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -113,10 +100,10 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="map_layout.xml" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="map_layout.xml" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/map_layout.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="-9.259259" vertical-offset="185" max-vertical-offset="660">
+                <state vertical-scroll-proportion="1.0235294" vertical-offset="0" max-vertical-offset="660">
                   <caret line="29" column="92" selection-start-line="29" selection-start-column="92" selection-end-line="29" selection-end-column="92" />
                   <folding />
                 </state>
@@ -155,9 +142,11 @@
           <file leaf-file-name="search_bar_expanded.xml" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/search_bar_expanded.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="-15.555555" vertical-offset="0" max-vertical-offset="990">
-                  <caret line="28" column="72" selection-start-line="28" selection-start-column="72" selection-end-line="28" selection-end-column="72" />
-                  <folding />
+                <state vertical-scroll-proportion="-1.6666666" vertical-offset="0" max-vertical-offset="990">
+                  <caret line="3" column="37" selection-start-line="3" selection-start-column="37" selection-end-line="3" selection-end-column="37" />
+                  <folding>
+                    <element signature="e#1189#1231#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
               <provider editor-type-id="android-designer">
@@ -169,31 +158,63 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="ChubActivity.java" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="MapFragment.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/MapFragment.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="-16.153847" vertical-offset="660" max-vertical-offset="1815">
+                  <caret line="78" column="23" selection-start-line="78" selection-start-column="23" selection-end-line="78" selection-end-column="23" />
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                    <element signature="e#3575#3626#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ChubActivity.java" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/activity/ChubActivity.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="390">
-                  <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
+                <state vertical-scroll-proportion="0.19911504" vertical-offset="660" max-vertical-offset="4140">
+                  <caret line="50" column="49" selection-start-line="50" selection-start-column="49" selection-end-line="50" selection-end-column="49" />
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                    <element signature="e#2030#2094#0" expanded="true" />
+                    <element signature="e#2913#3136#0" expanded="true" />
+                    <element signature="e#3117#3118#0" expanded="true" />
+                    <element signature="e#4588#4860#0" expanded="true" />
+                    <element signature="e#4853#4854#0" expanded="true" />
+                    <element signature="e#7743#8120#0" expanded="true" />
+                    <element signature="e#8113#8114#0" expanded="true" />
+                    <element signature="e#9403#9404#0" expanded="true" />
+                    <element signature="e#9442#9443#0" expanded="true" />
+                    <element signature="e#9495#9496#0" expanded="true" />
+                    <element signature="e#9550#9551#0" expanded="true" />
+                    <element signature="e#9608#9609#0" expanded="true" />
+                    <element signature="e#9635#9636#0" expanded="true" />
+                    <element signature="e#9688#9689#0" expanded="true" />
+                    <element signature="e#9727#9728#0" expanded="true" />
+                    <element signature="e#9776#9777#0" expanded="true" />
+                    <element signature="e#9807#9808#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="DialerUtils.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/util/DialerUtils.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.0" vertical-offset="464" max-vertical-offset="675">
+                  <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="strings.xml" pinned="false" current="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+          <file leaf-file-name="SearchEditTextLayout.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/SearchEditTextLayout.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.29347825" vertical-offset="0" max-vertical-offset="460">
-                  <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="dimens.xml" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/app/src/main/res/values/dimens.xml">
-              <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="870">
-                  <caret line="6" column="31" selection-start-line="6" selection-start-column="31" selection-end-line="6" selection-end-column="31" />
+                <state vertical-scroll-proportion="0.0" vertical-offset="1004" max-vertical-offset="3795">
+                  <caret line="99" column="44" selection-start-line="99" selection-start-column="44" selection-end-line="99" selection-end-column="44" />
                   <folding />
                 </state>
               </provider>
@@ -1415,21 +1436,21 @@
         <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/util/DialerUtils.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/drawable/rounded_corner.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/menu/menu_map.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/ActionBarController.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/colors" />
         <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/SearchFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/search_layout.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/SearchEditTextLayout.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/search_edittext_container.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/styles.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/activity/ChubActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/search_bar_expanded.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/map_fragment.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/dimens.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/map_layout.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/MapFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/search_edittext.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/ActionBarController.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/MapFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/activity/ChubActivity.java" />
       </list>
     </option>
   </component>
@@ -2473,7 +2494,7 @@
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5403349" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21917808" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24961948" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -2532,8 +2553,7 @@
           <caret line="40" column="4" selection-start-line="40" selection-start-column="4" selection-end-line="40" selection-end-column="4" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#3065#3119#0" expanded="true" />
-            <element signature="e#4637#4688#0" expanded="true" />
+            <element signature="e#3575#3626#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2779,22 +2799,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/util/DialerUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="375" max-vertical-offset="675">
-          <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/ActionBarController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.5" vertical-offset="1904" max-vertical-offset="3075">
-          <caret line="149" column="56" selection-start-line="149" selection-start-column="47" selection-end-line="149" selection-end-column="56" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/SearchFragment.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.35" vertical-offset="90" max-vertical-offset="390">
@@ -2814,23 +2818,6 @@
       </provider>
       <provider editor-type-id="android-designer">
         <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/SearchEditTextLayout.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.65873015" vertical-offset="884" max-vertical-offset="3960">
-          <caret line="85" column="0" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
-          <folding>
-            <element signature="e#2439#2440#0" expanded="true" />
-            <element signature="e#2476#2477#0" expanded="true" />
-            <element signature="e#3891#4211#0" expanded="true" />
-            <element signature="e#4200#4201#0" expanded="true" />
-            <element signature="e#4281#4435#0" expanded="true" />
-            <element signature="e#4424#4425#0" expanded="true" />
-            <element signature="e#4504#4765#0" expanded="true" />
-            <element signature="e#4754#4755#0" expanded="true" />
-          </folding>
-        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/styles.xml">
@@ -2857,15 +2844,77 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/search_bar_expanded.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/search_edittext.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-15.555555" vertical-offset="0" max-vertical-offset="990">
-          <caret line="28" column="72" selection-start-line="28" selection-start-column="72" selection-end-line="28" selection-end-column="72" />
-          <folding />
+        <state vertical-scroll-proportion="-11.481482" vertical-offset="890" max-vertical-offset="1335">
+          <caret line="80" column="36" selection-start-line="80" selection-start-column="36" selection-end-line="80" selection-end-column="36" />
+          <folding>
+            <element signature="e#369#395#0" expanded="true" />
+            <element signature="e#430#459#0" expanded="true" />
+            <element signature="e#492#525#0" expanded="true" />
+            <element signature="e#559#592#0" expanded="true" />
+            <element signature="e#2516#2541#0" expanded="true" />
+          </folding>
         </state>
       </provider>
       <provider editor-type-id="android-designer">
         <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.35869566" vertical-offset="0" max-vertical-offset="460">
+          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/search_bar_expanded.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.6666666" vertical-offset="0" max-vertical-offset="990">
+          <caret line="3" column="37" selection-start-line="3" selection-start-column="37" selection-end-line="3" selection-end-column="37" />
+          <folding>
+            <element signature="e#1189#1231#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/ActionBarController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.52330506" vertical-offset="2048" max-vertical-offset="3120">
+          <caret line="173" column="17" selection-start-line="173" selection-start-column="17" selection-end-line="173" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/widget/SearchEditTextLayout.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1004" max-vertical-offset="3795">
+          <caret line="99" column="44" selection-start-line="99" selection-start-column="44" selection-end-line="99" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/MapFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-16.153847" vertical-offset="660" max-vertical-offset="1815">
+          <caret line="78" column="23" selection-start-line="78" selection-start-column="23" selection-end-line="78" selection-end-column="23" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#3575#3626#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/util/DialerUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="375" max-vertical-offset="675">
+          <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/map_fragment.xml">
@@ -2884,7 +2933,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/map_layout.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.259259" vertical-offset="185" max-vertical-offset="660">
+        <state vertical-scroll-proportion="1.0235294" vertical-offset="0" max-vertical-offset="660">
           <caret line="29" column="92" selection-start-line="29" selection-start-column="92" selection-end-line="29" selection-end-column="92" />
           <folding />
         </state>
@@ -2893,48 +2942,31 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/fragment/MapFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.6538461" vertical-offset="1007" max-vertical-offset="4995">
-          <caret line="70" column="56" selection-start-line="70" selection-start-column="56" selection-end-line="70" selection-end-column="56" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#3065#3119#0" expanded="true" />
-            <element signature="e#4637#4688#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/android/chub/io/chub/activity/ChubActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="390">
-          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.29347825" vertical-offset="0" max-vertical-offset="460">
-          <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/search_edittext.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.60674155" vertical-offset="510" max-vertical-offset="1335">
-          <caret line="52" column="53" selection-start-line="52" selection-start-column="53" selection-end-line="52" selection-end-column="53" />
+        <state vertical-scroll-proportion="0.19911504" vertical-offset="660" max-vertical-offset="4140">
+          <caret line="50" column="49" selection-start-line="50" selection-start-column="49" selection-end-line="50" selection-end-column="49" />
           <folding>
-            <element signature="e#369#395#0" expanded="true" />
-            <element signature="e#430#459#0" expanded="true" />
-            <element signature="e#492#525#0" expanded="true" />
-            <element signature="e#559#592#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#2030#2094#0" expanded="true" />
+            <element signature="e#2913#3136#0" expanded="true" />
+            <element signature="e#3117#3118#0" expanded="true" />
+            <element signature="e#4588#4860#0" expanded="true" />
+            <element signature="e#4853#4854#0" expanded="true" />
+            <element signature="e#7743#8120#0" expanded="true" />
+            <element signature="e#8113#8114#0" expanded="true" />
+            <element signature="e#9403#9404#0" expanded="true" />
+            <element signature="e#9442#9443#0" expanded="true" />
+            <element signature="e#9495#9496#0" expanded="true" />
+            <element signature="e#9550#9551#0" expanded="true" />
+            <element signature="e#9608#9609#0" expanded="true" />
+            <element signature="e#9635#9636#0" expanded="true" />
+            <element signature="e#9688#9689#0" expanded="true" />
+            <element signature="e#9727#9728#0" expanded="true" />
+            <element signature="e#9776#9777#0" expanded="true" />
+            <element signature="e#9807#9808#0" expanded="true" />
           </folding>
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
   </component>
