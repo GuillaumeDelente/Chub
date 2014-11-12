@@ -1,5 +1,7 @@
 package android.chub.io.chub.fragment;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.GeocodingService;
@@ -9,10 +11,10 @@ import android.chub.io.chub.util.DialerUtils;
 import android.chub.io.chub.widget.ActionBarController;
 import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Outline;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
@@ -28,6 +30,7 @@ import android.view.ViewOutlineProvider;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mapbox.mapboxsdk.events.MapListener;
@@ -50,6 +53,7 @@ import rx.schedulers.Schedulers;
 public class MapFragment extends BaseFragment implements ActionBarController.ActivityUi {
 
     private static final String TAG = "MapFragment";
+    private static final String SEARCH_FRAGMENT = "search_fragment";
     private MapView mMapView;
     private ImageButton mShareLocationFab;
     private ActionBarController mActionBarController;
@@ -94,7 +98,7 @@ public class MapFragment extends BaseFragment implements ActionBarController.Act
             }
         });
 
-        mParentLayout = (FrameLayout) view.findViewById(R.id.container);
+        mParentLayout = (FrameLayout) view.findViewById(R.id.fragment_container);
     }
 
     @Override
@@ -105,20 +109,24 @@ public class MapFragment extends BaseFragment implements ActionBarController.Act
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ActionBarActivity activity = ((ActionBarActivity) getActivity());
-        ActionBar actionBar = activity.getSupportActionBar();
-        actionBar.setCustomView(R.layout.search_edittext);
-        actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setBackgroundDrawable(null);
-        final Resources resources = activity.getResources();
+        final Resources resources = getActivity().getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            ((FrameLayout.LayoutParams) mShareLocationFab.getLayoutParams()).bottomMargin =
+                    resources.getDimensionPixelSize(resourceId)
+                            + resources.getDimensionPixelSize(R.dimen.fab_margin);
+        }
         mActionBarHeight = resources.getDimensionPixelSize(R.dimen.action_bar_height_large);
-        mActionBarController = new ActionBarController(this,
-                (SearchEditTextLayout) actionBar.getCustomView());
-        final SearchEditTextLayout searchEditTextLayout =
-                (SearchEditTextLayout) actionBar.getCustomView();
+        final SearchEditTextLayout searchEditTextLayout = (SearchEditTextLayout) getActivity().findViewById(R.id.search_view_container);
+        mActionBarController = new ActionBarController(this, searchEditTextLayout);
         searchEditTextLayout.setPreImeKeyListener(mSearchEditTextLayoutListener);
         mSearchView = (EditText) searchEditTextLayout.findViewById(R.id.search_view);
         mSearchView.addTextChangedListener(mPhoneSearchQueryTextListener);
+        searchEditTextLayout.findViewById(R.id.search_magnifying_glass)
+                .setOnClickListener(mSearchViewOnClickListener);
+        searchEditTextLayout.findViewById(R.id.search_box_start_search)
+                .setOnClickListener(mSearchViewOnClickListener);
+        /*
         mMapView.addListener(new MapListener() {
             @Override
             public void onScroll(ScrollEvent scrollEvent) {
@@ -146,6 +154,7 @@ public class MapFragment extends BaseFragment implements ActionBarController.Act
 
             }
         });
+        */
     }
 
 
@@ -213,6 +222,19 @@ public class MapFragment extends BaseFragment implements ActionBarController.Act
             Log.d(TAG, "Entering search UI - smart dial ");
         }
         mInRegularSearch = true;
+        final FragmentManager fragmentManager = getActivity().getFragmentManager();
+        final FragmentTransaction transaction = fragmentManager.beginTransaction();
+        SearchFragment fragment = (SearchFragment) fragmentManager.findFragmentByTag(SEARCH_FRAGMENT);
+        transaction.setCustomAnimations(android.R.animator.fade_in, 0);
+        if (fragment == null) {
+            fragment = new SearchFragment();
+            transaction.add(R.id.dialtacts_frame, fragment, SEARCH_FRAGMENT);
+        } else {
+            transaction.show(fragment);
+        }
+        // DialtactsActivity will provide the options menu
+        transaction.commit();
+        //mListsFragment.getView().animate().alpha(0).withLayer();
 /*
         final FragmentTransaction transaction = getFragmentManager().beginTransaction();
         if (mInDialpadSearch && mSmartDialSearchFragment != null) {
@@ -282,25 +304,21 @@ public class MapFragment extends BaseFragment implements ActionBarController.Act
      * Hides the search fragment
      */
     private void exitSearchUi() {
+        final FragmentManager fragmentManager = getActivity().getFragmentManager();
         // See related bug in enterSearchUI();
-        if (getFragmentManager().isDestroyed()) {
+
+        if (fragmentManager.isDestroyed()) {
             return;
         }
 
         mSearchView.setText(null);
         mInRegularSearch = false;
-/*
-        final FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        if (mSmartDialSearchFragment != null) {
-            transaction.remove(mSmartDialSearchFragment);
-        }
-        if (mRegularSearchFragment != null) {
-            transaction.remove(mRegularSearchFragment);
-        }
+
+        final FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.remove(fragmentManager.findFragmentByTag(SEARCH_FRAGMENT));
         transaction.commit();
 
-        mListsFragment.getView().animate().alpha(1).withLayer();
-        */
+        //mListsFragment.getView().animate().alpha(1).withLayer();
         mActionBarController.onSearchUiExited();
     }
 
@@ -316,7 +334,7 @@ public class MapFragment extends BaseFragment implements ActionBarController.Act
 
     @Override
     public boolean shouldShowActionBar() {
-        return false;
+        return true;
     }
 
     @Override

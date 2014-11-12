@@ -1,7 +1,8 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/fragment_container">
 
 <com.mapbox.mapboxsdk.views.MapView
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
@@ -12,25 +13,16 @@
 
 
     <FrameLayout
-        android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <ImageView
-            android:src="@drawable/destination_pin"
-            android:layout_height="100dp"
-            android:layout_width="50dp"
-            android:layout_gravity="center"
-            android:paddingLeft="25dp"/>
-
 
         <ImageButton
             android:id="@+id/share_location_fab"
             android:layout_width="@dimen/fab_size"
             android:layout_height="@dimen/fab_size"
             android:layout_gravity="bottom|right"
-            android:layout_marginRight="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginBottom="@dimen/fab_margin"
             android:background="@drawable/ripple"
             android:stateListAnimator="@drawable/anim"
             android:src="@android:drawable/ic_menu_send"

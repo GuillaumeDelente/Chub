@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <view class="android.chub.io.chub.widget.SearchEditTextLayout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/search_view_container"
-    android:orientation="horizontal"
-    android:layout_marginTop="@dimen/search_top_margin"
-    android:layout_marginBottom="@dimen/search_bottom_margin"
-    android:layout_marginLeft="@dimen/search_margin_horizontal"
-    android:layout_marginRight="@dimen/search_margin_horizontal"
-    android:background="@drawable/rounded_corner"
-    android:elevation="@dimen/search_box_elevation">
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:id="@+id/search_view_container"
+      android:orientation="horizontal"
+      android:layout_marginTop="@dimen/search_top_margin"
+      android:layout_marginBottom="@dimen/search_bottom_margin"
+      android:layout_marginLeft="@dimen/search_margin_horizontal"
+      android:layout_marginRight="@dimen/search_margin_horizontal"
+      android:background="@drawable/rounded_corner"
+      android:elevation="@dimen/search_box_elevation">
 
     <LinearLayout
         android:id="@+id/search_box_collapsed"
@@ -49,7 +50,7 @@
                 android:fontFamily="sans-serif"
                 android:textColor="@color/searchbox_hint_text_color"
                 android:gravity="center_vertical"
-                android:text="Search address or location"
+                android:text="@string/search_box_hint"
                 android:lines="1"
                 android:ellipsize="end"/>
 
