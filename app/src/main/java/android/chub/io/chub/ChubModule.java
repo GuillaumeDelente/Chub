@@ -4,6 +4,7 @@ import android.app.Application;
 import android.chub.io.chub.activity.ChubActivity;
 import android.chub.io.chub.data.DataModule;
 import android.chub.io.chub.fragment.MapFragment;
+import android.chub.io.chub.fragment.SearchFragment;
 
 import dagger.Module;
 import dagger.Provides;
@@ -20,6 +21,7 @@ import javax.inject.Singleton;
                 ChubApp.class,
                 ChubActivity.class,
                 MapFragment.class,
+                SearchFragment.class,
         }
 )
 

@@ -14,7 +14,12 @@ import rx.Observable;
  */
 public interface GeocodingService  {
 
-    @GET("/json") //
+    @GET("/geocode/json") //
     Observable<GoogleResponse<GoogleAddress>>
     getAddress(@Query("latlng") String latLng);
+
+    @GET("/place/autocomplete/json?types=establishment") //
+    Observable<GoogleResponse<GoogleAddress>>
+    getAddress(@Query("input") String input,//
+               @Query("location") String location);
 }

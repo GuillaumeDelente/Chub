@@ -12,6 +12,7 @@ import dagger.Provides;
 import retrofit.Endpoint;
 import retrofit.Endpoints;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 import retrofit.client.Client;
 import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
@@ -25,7 +26,7 @@ import retrofit.converter.GsonConverter;
         library = true
 )
 public class ApiModule {
-    public static final String PRODUCTION_API_URL = "https://maps.googleapis.com/maps/api/geocode";
+    public static final String PRODUCTION_API_URL = "https://maps.googleapis.com/maps/api";
 
     @Provides @Singleton
     Endpoint provideEndpoint() {
@@ -42,7 +43,8 @@ public class ApiModule {
         return new RestAdapter.Builder() //
                 .setClient(client) //
                 .setEndpoint(endpoint) //
-                .setConverter(new GsonConverter(gson))
+                .setConverter(new GsonConverter(gson))//
+                .setLogLevel(RestAdapter.LogLevel.FULL)
                 .build();
         }
 

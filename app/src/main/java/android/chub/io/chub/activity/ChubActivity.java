@@ -1,8 +1,5 @@
 package android.chub.io.chub.activity;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.fragment.MapFragment;
@@ -12,6 +9,9 @@ import android.chub.io.chub.widget.ActionBarController;
 import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -26,7 +26,7 @@ import android.widget.FrameLayout;
 
 public class ChubActivity extends BaseActivity implements ActionBarController.ActivityUi {
 
-    private static final String TAG = "MapFragment";
+    private static final String TAG = "ChubActivity";
     private static final String SEARCH_FRAGMENT = "search_fragment";
     private ActionBarController mActionBarController;
     private EditText mSearchView;
@@ -35,6 +35,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private boolean mInRegularSearch;
     private FrameLayout mParentLayout;
     private Toolbar mToolbar;
+    private SearchFragment mSearchFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +70,18 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 });
     }
 
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+        if (fragment instanceof SearchFragment) {
+            mSearchFragment = (SearchFragment) fragment;
+            //mSearchFragment.setOnPhoneNumberPickerActionListener(this);
+        }
+    }
+
     /*
-* Listener used to send search queries to the phone search fragment.
-*/
+        * Listener used to send search queries to the phone search fragment.
+        */
     private final TextWatcher mPhoneSearchQueryTextListener = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -95,6 +105,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             // Show search fragment only when the query string is changed to non-empty text.
             if (!TextUtils.isEmpty(newText)) {
                 enterSearchUi(mSearchQuery);
+            }
+
+            if (mSearchFragment != null && mSearchFragment.isVisible()) {
+                mSearchFragment.setQueryString(mSearchQuery, "37.76999,-122.44696");
             }
         }
 
@@ -133,10 +147,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             Log.d(TAG, "Entering search UI - smart dial ");
         }
         mInRegularSearch = true;
-        final FragmentManager fragmentManager = getFragmentManager();
+        final FragmentManager fragmentManager = getSupportFragmentManager();
         final FragmentTransaction transaction = fragmentManager.beginTransaction();
         SearchFragment fragment = (SearchFragment) fragmentManager.findFragmentByTag(SEARCH_FRAGMENT);
-        transaction.setCustomAnimations(android.R.animator.fade_in, 0);
+        //transaction.setCustomAnimations(android.R.animator.fade_in, 0);
         if (fragment == null) {
             fragment = new SearchFragment();
             transaction.add(R.id.dialtacts_frame, fragment, SEARCH_FRAGMENT);
@@ -146,43 +160,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         // DialtactsActivity will provide the options menu
         transaction.commit();
         //mListsFragment.getView().animate().alpha(0).withLayer();
-/*
-        final FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        if (mInDialpadSearch && mSmartDialSearchFragment != null) {
-            transaction.remove(mSmartDialSearchFragment);
-        } else if (mInRegularSearch && mRegularSearchFragment != null) {
-            transaction.remove(mRegularSearchFragment);
-        }
-
-        final String tag;
-        if (smartDialSearch) {
-            tag = TAG_SMARTDIAL_SEARCH_FRAGMENT;
-        } else {
-            tag = TAG_REGULAR_SEARCH_FRAGMENT;
-        }
-        mInDialpadSearch = smartDialSearch;
-        mInRegularSearch = !smartDialSearch;
-
-        SearchFragment fragment = (SearchFragment) getFragmentManager().findFragmentByTag(tag);
-        transaction.setCustomAnimations(android.R.animator.fade_in, 0);
-        if (fragment == null) {
-            if (smartDialSearch) {
-                fragment = new SmartDialSearchFragment();
-            } else {
-                fragment = new RegularSearchFragment();
-            }
-            transaction.add(R.id.dialtacts_frame, fragment, tag);
-        } else {
-            transaction.show(fragment);
-        }
-        // DialtactsActivity will provide the options menu
-        fragment.setHasOptionsMenu(false);
-        fragment.setShowEmptyListForNullQuery(true);
-        fragment.setQueryString(query, false);
-        transaction.commit();
-
-        mListsFragment.getView().animate().alpha(0).withLayer();
-        */
     }
 
     /**
@@ -215,7 +192,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
      * Hides the search fragment
      */
     private void exitSearchUi() {
-        final FragmentManager fragmentManager = getFragmentManager();
+        final FragmentManager fragmentManager = getSupportFragmentManager();
         // See related bug in enterSearchUI();
 
         if (fragmentManager.isDestroyed()) {
