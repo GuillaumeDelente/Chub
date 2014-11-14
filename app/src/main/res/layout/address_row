@@ -1,0 +1,26 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingRight="8dp"
+    android:paddingLeft="60dp">
+
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        />
+
+    <TextView
+        android:id="@android:id/text2"
+        android:layout_below="@android:id/text1"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:textSize="14sp"
+        />
+
+    </RelativeLayout>

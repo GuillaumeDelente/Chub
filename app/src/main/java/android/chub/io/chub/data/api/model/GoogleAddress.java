@@ -5,9 +5,12 @@ package android.chub.io.chub.data.api.model;
  */
 public class GoogleAddress {
 
-    public final String formattedAddress;
+    public final String description;
+    public final TermsTypeAdapter.Terms terms;
 
-    public GoogleAddress(String formattedAddress) {
-        this.formattedAddress = formattedAddress;
+    public GoogleAddress(String description, TermsTypeAdapter.Terms terms) {
+        this.description = description;
+        this.terms = terms;
     }
+
 }

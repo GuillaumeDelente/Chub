@@ -1,5 +1,9 @@
 package android.chub.io.chub.data.api;
 
+import android.chub.io.chub.R;
+import android.chub.io.chub.data.api.model.TermsTypeAdapter;
+import android.content.Context;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -44,7 +48,7 @@ public class ApiModule {
                 .setClient(client) //
                 .setEndpoint(endpoint) //
                 .setConverter(new GsonConverter(gson))//
-                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setLogLevel(RestAdapter.LogLevel.FULL)//
                 .build();
         }
 
@@ -52,10 +56,15 @@ public class ApiModule {
     Gson provideGsonConverter() {
         return new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapter(TermsTypeAdapter.Terms.class, new TermsTypeAdapter())
                 .create();
     }
 
     @Provides @Singleton GeocodingService provideGeocodingService(RestAdapter restAdapter) {
         return restAdapter.create(GeocodingService.class);
+    }
+
+    @Provides @Singleton @ApiKey String provideApiKey(Context context) {
+        return context.getString(R.string.place_api_key);
     }
 }

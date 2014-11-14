@@ -7,9 +7,9 @@ import java.util.List;
  */
 public class GoogleResponse<T> {
 
-    public final List<T> results;
+    public final List<T> predictions;
 
-    public GoogleResponse(List<T> results) {
-        this.results = results;
+    public GoogleResponse(List<T> predictions) {
+        this.predictions = predictions;
     }
 }

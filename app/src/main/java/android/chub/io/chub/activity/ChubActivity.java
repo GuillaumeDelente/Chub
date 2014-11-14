@@ -23,6 +23,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
 
 public class ChubActivity extends BaseActivity implements ActionBarController.ActivityUi {
 
@@ -36,6 +38,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private FrameLayout mParentLayout;
     private Toolbar mToolbar;
     private SearchFragment mSearchFragment;
+    private MapFragment mMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +78,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         super.onAttachFragment(fragment);
         if (fragment instanceof SearchFragment) {
             mSearchFragment = (SearchFragment) fragment;
-            //mSearchFragment.setOnPhoneNumberPickerActionListener(this);
+        } else if (fragment instanceof MapFragment) {
+            mMapFragment = (MapFragment) fragment;
         }
     }
 
     /*
-        * Listener used to send search queries to the phone search fragment.
-        */
+            * Listener used to send search queries to the phone search fragment.
+            */
     private final TextWatcher mPhoneSearchQueryTextListener = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -108,7 +112,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             }
 
             if (mSearchFragment != null && mSearchFragment.isVisible()) {
-                mSearchFragment.setQueryString(mSearchQuery, "37.76999,-122.44696");
+                String location = null;
+                if (mMapFragment != null) {
+                    LatLng position = mMapFragment.getCurrentLocation();
+                    location = String.format("%f,%f", position.getLatitude(),
+                            position.getLongitude());
+                }
+                mSearchFragment.setQueryString(mSearchQuery, location != null ? location : "37,36");
             }
         }
 

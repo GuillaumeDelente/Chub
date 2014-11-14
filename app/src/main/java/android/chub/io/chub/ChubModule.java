@@ -5,6 +5,7 @@ import android.chub.io.chub.activity.ChubActivity;
 import android.chub.io.chub.data.DataModule;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
+import android.content.Context;
 
 import dagger.Module;
 import dagger.Provides;
@@ -35,4 +36,9 @@ public class ChubModule {
         @Provides @Singleton Application provideApplication() {
             return app;
         }
+
+    @Provides @Singleton
+    Context provideApplicationContext() {
+        return app.getApplicationContext();
     }
+}

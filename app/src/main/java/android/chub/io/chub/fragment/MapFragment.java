@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
@@ -30,16 +31,9 @@ public class MapFragment extends BaseFragment {
     private static final String SEARCH_FRAGMENT = "search_fragment";
     private MapView mMapView;
     private ImageButton mShareLocationFab;
-    private ActionBarController mActionBarController;
-    private EditText mSearchView;
-    //private SearchEditTextLayout mSearchView;
-    @Inject
-    GeocodingService mGeocodingService;
-    private int mActionBarHeight;
-    private String mSearchQuery;
-    private boolean mInRegularSearch;
-    private FrameLayout mParentLayout;
-
+    private UserLocationOverlay mUserLocationOverlay;
+    private GpsLocationProvider mGpsLocationProvider;
+    private LatLng mUserLocation;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,19 +54,19 @@ public class MapFragment extends BaseFragment {
                 outline.setOval(0, 0, size, size);
             }
         });
-        GpsLocationProvider myLocationProvider = new GpsLocationProvider(getActivity());
-        final UserLocationOverlay myLocationOverlay = new UserLocationOverlay(myLocationProvider, mMapView);
-        myLocationOverlay.enableMyLocation();
-        myLocationOverlay.setDrawAccuracyEnabled(true);
-        mMapView.getOverlays().add(myLocationOverlay);
-        myLocationOverlay.runOnFirstFix(new Runnable() {
+        mGpsLocationProvider = new GpsLocationProvider(getActivity());
+        mUserLocationOverlay = new UserLocationOverlay(mGpsLocationProvider, mMapView);
+        mUserLocationOverlay.enableMyLocation();
+        mUserLocationOverlay.setDrawAccuracyEnabled(true);
+        mMapView.getOverlays().add(mUserLocationOverlay);
+        mUserLocationOverlay.runOnFirstFix(new Runnable() {
             @Override
             public void run() {
-                mMapView.setCenter(myLocationOverlay.getMyLocation());
+                mMapView.setCenter(mUserLocationOverlay.getMyLocation());
+                mUserLocation = mUserLocationOverlay.getMyLocation();
             }
         });
 
-        mParentLayout = (FrameLayout) view.findViewById(R.id.fragment_container);
     }
 
     @Override
@@ -90,34 +84,9 @@ public class MapFragment extends BaseFragment {
                     resources.getDimensionPixelSize(resourceId)
                             + resources.getDimensionPixelSize(R.dimen.fab_margin);
         }
-        /*
-        mMapView.addListener(new MapListener() {
-            @Override
-            public void onScroll(ScrollEvent scrollEvent) {
-                LatLng center = mMapView.getCenter();
-                mGeocodingService.getAddress(String.format("%f,%f", center.getLatitude(),
-                        center.getLongitude()))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Action1<GoogleResponse<GoogleAddress>>() {
-                            @Override
-                            public void call(GoogleResponse<GoogleAddress> googleAddressGoogleResponse) {
-                                searchEditTextLayout.setCollapsedSearchBoxText(null);
-                                if (!googleAddressGoogleResponse.results.isEmpty()) {
-                                    searchEditTextLayout
-                                            .setCollapsedSearchBoxText(
-                                                    googleAddressGoogleResponse
-                                                            .results.get(0).formattedAddress);
-                                }
-                            }
-                        });
-            }
+    }
 
-            @Override
-            public void onZoom(ZoomEvent zoomEvent) {
-
-            }
-        });
-        */
+    public LatLng getCurrentLocation() {
+        return mUserLocation;
     }
 }
