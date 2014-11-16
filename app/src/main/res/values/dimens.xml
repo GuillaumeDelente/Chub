@@ -49,4 +49,9 @@ room to the search box-->
     <!-- actionbar height + tab height -->
     <dimen name="actionbar_and_tab_height">107dp</dimen>
     <dimen name="actionbar_contentInsetStart">72dp</dimen>
+
+
+    <dimen name="search_result1_textsize">16sp</dimen>
+    <dimen name="search_result2_textsize">14sp</dimen>
+    <dimen name="divider_padding_left">68dp</dimen>
 </resources>

@@ -1,9 +1,20 @@
 package android.chub.io.chub.adapter;
 
+import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.model.GoogleAddress;
+import android.chub.io.chub.data.api.model.Terms;
 import android.chub.io.chub.data.api.model.TermsTypeAdapter;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +26,9 @@ import java.util.List;
  * Created by guillaume on 11/12/14.
  */
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
+    private static final String TAG = "SearchAdapter";
     private List<GoogleAddress> mDataset;
+    private Resources mResources;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -32,14 +45,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public SearchAdapter(List<GoogleAddress> addresses) {
+    public SearchAdapter(List<GoogleAddress> addresses, Context context) {
         mDataset = addresses;
+        mResources = context.getResources();
     }
 
     // Create new views (invoked by the layout manager)
     @Override
-    public SearchAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
+    public SearchAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.address_row, parent, false);
@@ -52,9 +65,23 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        TermsTypeAdapter.Terms terms = mDataset.get(position).terms;
-        holder.mTextView1.setText(terms.address);
-        holder.mTextView2.setText(terms.city + ", " + terms.state);
+        GoogleAddress address = mDataset.get(position);
+        Terms terms = address.terms;
+        final SpannableString spannableString = new SpannableString(String.format("%s %s",
+                TextUtils.isEmpty(terms.number) ? "" : terms.number,
+                TextUtils.isEmpty(terms.address) ? "" : terms.address));
+        ForegroundColorSpan span = new ForegroundColorSpan(
+                mResources.getColor(R.color.search_result_matched));
+        for (GoogleAddress.MatchedString matchedString : address.matched_substrings) {
+            spannableString.setSpan(span, matchedString.offset,
+                    matchedString.offset + matchedString.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (BuildConfig.DEBUG)
+                Log.d(TAG, "Matched string " + matchedString.offset + " " + matchedString.length);
+        }
+        holder.mTextView1.setText(spannableString);
+        holder.mTextView2.setText(String.format("%s %s",
+                TextUtils.isEmpty(terms.city) ? "" : terms.city.trim(),
+                TextUtils.isEmpty(terms.state) ? "" : ", " + terms.state));
 
     }
 

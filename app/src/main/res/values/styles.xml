@@ -26,4 +26,15 @@
         <item name="android:textColor">@color/actionbar_text_color</item>
     </style>
 
+    <style name="search_result1" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/search_result</item>
+        <item name="android:textSize">@dimen/search_result1_textsize</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="search_result2">
+        <item name="android:textColor">@color/search_result_matched</item>
+        <item name="android:textSize">@dimen/search_result2_textsize</item>
+    </style>
+
 </resources>

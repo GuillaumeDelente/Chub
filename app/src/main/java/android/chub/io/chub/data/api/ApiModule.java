@@ -1,6 +1,8 @@
 package android.chub.io.chub.data.api;
 
 import android.chub.io.chub.R;
+import android.chub.io.chub.data.api.model.GoogleAddress;
+import android.chub.io.chub.data.api.model.Terms;
 import android.chub.io.chub.data.api.model.TermsTypeAdapter;
 import android.content.Context;
 
@@ -56,7 +58,7 @@ public class ApiModule {
     Gson provideGsonConverter() {
         return new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapter(TermsTypeAdapter.Terms.class, new TermsTypeAdapter())
+                .registerTypeAdapter(Terms.class, new TermsTypeAdapter())
                 .create();
     }
 

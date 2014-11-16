@@ -1,5 +1,6 @@
 package android.chub.io.chub.fragment;
 
+import android.app.Activity;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.adapter.SearchAdapter;
@@ -7,6 +8,7 @@ import android.chub.io.chub.data.api.ApiKey;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleResponse;
+import android.chub.io.chub.widget.DividerItemDecoration;
 import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,11 +21,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -40,6 +44,7 @@ public class SearchFragment extends BaseFragment {
     private SearchAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
+    private String mCurrentQuery = "";
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -54,14 +59,24 @@ public class SearchFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
     }
 
-    public void setQueryString(String query, String location) {
+    public void setQueryString(final String query, final String location) {
         if (BuildConfig.DEBUG)
             Log.d(TAG, "setQueryString");
-        if (TextUtils.isEmpty(query))
+        if (TextUtils.isEmpty(query)) {
+            mCurrentQuery = "";
+            mAdapter.updateItems(new ArrayList<GoogleAddress>(0));
             return;
+        }
+        mCurrentQuery = query;
         mGeocodingService.getAddress(query, location, mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .filter(new Func1<GoogleResponse<GoogleAddress>, Boolean>() {
+                    @Override
+                    public Boolean call(GoogleResponse<GoogleAddress> response) {
+                        return mCurrentQuery.equals(query);
+                    }
+                })
                 .subscribe(new Action1<GoogleResponse<GoogleAddress>>() {
                     @Override
                     public void call(GoogleResponse<GoogleAddress> googleAddressGoogleResponse) {
@@ -73,12 +88,15 @@ public class SearchFragment extends BaseFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(getActivity());
+        Activity activity = getActivity();
+        mLayoutManager = new LinearLayoutManager(activity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(activity,
+                DividerItemDecoration.VERTICAL_LIST,
+                activity.getResources().getDimensionPixelSize(R.dimen.divider_padding_left)));
 
         // specify an adapter (see also next example)
-        mAdapter = new SearchAdapter(new ArrayList<GoogleAddress>(0));
+        mAdapter = new SearchAdapter(new ArrayList<GoogleAddress>(0), activity);
         mRecyclerView.setAdapter(mAdapter);
     }
 }

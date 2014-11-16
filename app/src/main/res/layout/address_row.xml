@@ -2,25 +2,34 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingLeft="8dp"
     android:paddingRight="8dp"
-    android:paddingLeft="60dp">
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
 
-    <TextView
-        android:id="@android:id/text1"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:textStyle="bold"
-        android:textSize="14sp"
+    <ImageView android:id="@+id/icon"
+               android:layout_height="wrap_content"
+               android:layout_width="40dp"
+               android:src="@drawable/address_icon"
+               android:layout_centerVertical="true"
         />
 
     <TextView
+        style="@style/search_result1"
+        android:id="@android:id/text1"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/icon"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        />
+
+    <TextView
+        style="@style/search_result2"
         android:id="@android:id/text2"
+        android:layout_alignLeft="@android:id/text1"
         android:layout_below="@android:id/text1"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:textSize="14sp"
         />
 
     </RelativeLayout>
