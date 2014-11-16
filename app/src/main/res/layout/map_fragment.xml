@@ -4,12 +4,12 @@
     android:layout_height="match_parent"
     android:id="@+id/fragment_container">
 
-<com.mapbox.mapboxsdk.views.MapView
-    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+<com.google.android.gms.maps.MapView
+    xmlns:map="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mapview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    mapbox:mapid="gdelente.k6a2dfa9"/>
+    map:uiZoomControls="false"/>
 
 
     <FrameLayout

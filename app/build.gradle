@@ -45,10 +45,6 @@ dependencies {
 
     compile 'com.jakewharton.timber:timber:2.5.0'
 
-    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:0.4.0@aar'){
-        transitive=true
-    }
-    compile ('com.cocoahero.android:geojson:1.0.0@aar'){
-        transitive=true
-    }
+
+    compile 'com.google.android.gms:play-services:6.1.71'
 }

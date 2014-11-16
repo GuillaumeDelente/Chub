@@ -2,6 +2,13 @@ package android.chub.io.chub.activity;
 
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
+import android.chub.io.chub.data.api.ApiKey;
+import android.chub.io.chub.data.api.GeocodingService;
+import android.chub.io.chub.data.api.model.GoogleAddress;
+import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
+import android.chub.io.chub.data.api.model.GooglePlace;
+import android.chub.io.chub.data.api.model.GooglePlaceResponse;
+import android.chub.io.chub.data.api.model.GoogleRoute;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
 import android.chub.io.chub.util.DialerUtils;
@@ -12,7 +19,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -23,15 +29,23 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.google.android.gms.maps.model.LatLng;
+
+import javax.inject.Inject;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 
 public class ChubActivity extends BaseActivity implements ActionBarController.ActivityUi {
 
     private static final String TAG = "ChubActivity";
-    private static final String SEARCH_FRAGMENT = "search_fragment";
+    public static final String SEARCH_FRAGMENT = "search_fragment";
+    public static final String MAP_FRAGMENT = "map_fragment";
     private ActionBarController mActionBarController;
     private EditText mSearchView;
+    private SearchEditTextLayout mSearchEditTextLayout;
     private int mActionBarHeight;
     private String mSearchQuery;
     private boolean mInRegularSearch;
@@ -39,6 +53,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private Toolbar mToolbar;
     private SearchFragment mSearchFragment;
     private MapFragment mMapFragment;
+    @Inject
+    GeocodingService mGeocodingService;
+    @Inject
+    @ApiKey
+    String mGoogleApiKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +65,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         setContentView(R.layout.map_layout);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, android.support.v4.app.Fragment.instantiate(this, MapFragment.class.getName(), null))
+                    .add(R.id.fragment_container,
+                            android.support.v4.app.Fragment.instantiate(this,
+                                    MapFragment.class.getName(), null),
+                            MAP_FRAGMENT)
                     .commit();
         }
         mToolbar = (Toolbar) findViewById(R.id.actionBar);
@@ -54,17 +76,17 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         setSupportActionBar(mToolbar);
         mParentLayout = (FrameLayout) findViewById(R.id.container);
         mActionBarHeight = resources.getDimensionPixelSize(R.dimen.action_bar_height_large);
-        final SearchEditTextLayout searchEditTextLayout = (SearchEditTextLayout)
+        mSearchEditTextLayout = (SearchEditTextLayout)
                 findViewById(R.id.search_view_container);
-        mActionBarController = new ActionBarController(this, searchEditTextLayout);
-        searchEditTextLayout.setPreImeKeyListener(mSearchEditTextLayoutListener);
-        mSearchView = (EditText) searchEditTextLayout.findViewById(R.id.search_view);
+        mActionBarController = new ActionBarController(this, mSearchEditTextLayout);
+        mSearchEditTextLayout.setPreImeKeyListener(mSearchEditTextLayoutListener);
+        mSearchView = (EditText) mSearchEditTextLayout.findViewById(R.id.search_view);
         mSearchView.addTextChangedListener(mPhoneSearchQueryTextListener);
-        searchEditTextLayout.findViewById(R.id.search_magnifying_glass)
+        mSearchEditTextLayout.findViewById(R.id.search_magnifying_glass)
                 .setOnClickListener(mSearchViewOnClickListener);
-        searchEditTextLayout.findViewById(R.id.search_box_start_search)
+        mSearchEditTextLayout.findViewById(R.id.search_box_start_search)
                 .setOnClickListener(mSearchViewOnClickListener);
-        searchEditTextLayout.setOnBackButtonClickedListener(
+        mSearchEditTextLayout.setOnBackButtonClickedListener(
                 new SearchEditTextLayout.OnBackButtonClickedListener() {
                     @Override
                     public void onBackButtonClicked() {
@@ -115,8 +137,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 String location = null;
                 if (mMapFragment != null) {
                     LatLng position = mMapFragment.getCurrentLocation();
-                    location = String.format("%f,%f", position.getLatitude(),
-                            position.getLongitude());
+                    location = String.format("%f,%f", position.latitude,
+                            position.longitude);
                 }
                 mSearchFragment.setQueryString(mSearchQuery, location != null ? location : "37,36");
             }
@@ -208,8 +230,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (fragmentManager.isDestroyed()) {
             return;
         }
-
-        mSearchView.setText(null);
         mInRegularSearch = false;
 
         final FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -228,6 +248,36 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         } else {
             super.onBackPressed();
         }
+    }
+
+    public void onDestinationSelected(GoogleAddress address) {
+        mSearchEditTextLayout.setCollapsedSearchBoxText(address.description);
+        exitSearchUi();
+        LatLng currentLocation = mMapFragment.getCurrentLocation();
+        mGeocodingService.getDirections(
+                String.format("%f,%f", currentLocation.latitude,
+                        currentLocation.longitude),
+                address.description, mGoogleApiKey)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<GoogleDirectionResponse<GoogleRoute>>() {
+                    @Override
+                    public void call(GoogleDirectionResponse<GoogleRoute> googleAddressGoogleResponse) {
+                        mMapFragment.displayRoute(googleAddressGoogleResponse.routes.get(0).overview_polyline.points);
+                    }
+                });
+        mGeocodingService.getPlaceDetails(address.place_id, mGoogleApiKey)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<GooglePlaceResponse<GooglePlace>>() {
+                    @Override
+                    public void call(GooglePlaceResponse<GooglePlace> place) {
+                        LatLng latLng = new LatLng(place.result.geometry.location.lat,
+                                place.result.geometry.location.lng);
+                        mMapFragment.displayFlags(latLng);
+                    }
+                });
+
     }
 
     @Override

@@ -8,5 +8,6 @@
     <string name="search_box_hint">Choose destination</string>
 
     <string name="place_api_key">AIzaSyBUWK0qogLJu55O2N_9Bn8WbbePDaAv0Bc</string>
+    <string name="maps_api_key">AIzaSyBUWK0qogLJu55O2N_9Bn8WbbePDaAv0Bc</string>
 
 </resources>

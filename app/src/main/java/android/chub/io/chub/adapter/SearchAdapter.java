@@ -29,6 +29,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private static final String TAG = "SearchAdapter";
     private List<GoogleAddress> mDataset;
     private Resources mResources;
+    private LocationClickListener mLocationClickListener;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -50,6 +51,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         mResources = context.getResources();
     }
 
+    public void setOnLocationClickListener(LocationClickListener clickListener) {
+        mLocationClickListener = clickListener;
+    }
+
     // Create new views (invoked by the layout manager)
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -65,7 +70,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        GoogleAddress address = mDataset.get(position);
+        final GoogleAddress address = mDataset.get(position);
         Terms terms = address.terms;
         final SpannableString spannableString = new SpannableString(String.format("%s %s",
                 TextUtils.isEmpty(terms.number) ? "" : terms.number,
@@ -82,7 +87,16 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         holder.mTextView2.setText(String.format("%s %s",
                 TextUtils.isEmpty(terms.city) ? "" : terms.city.trim(),
                 TextUtils.isEmpty(terms.state) ? "" : ", " + terms.state));
-
+        if (mLocationClickListener != null) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mLocationClickListener.onLocationClicked(address);
+                }
+            });
+        } else {
+            holder.itemView.setOnClickListener(null);
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -95,5 +109,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         mDataset.clear();
         mDataset.addAll(addresses);
         notifyDataSetChanged();
+    }
+
+    public static interface LocationClickListener {
+        public void onLocationClicked(GoogleAddress address);
     }
 }

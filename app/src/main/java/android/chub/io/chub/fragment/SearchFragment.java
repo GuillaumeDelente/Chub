@@ -3,13 +3,13 @@ package android.chub.io.chub.fragment;
 import android.app.Activity;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
+import android.chub.io.chub.activity.ChubActivity;
 import android.chub.io.chub.adapter.SearchAdapter;
 import android.chub.io.chub.data.api.ApiKey;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.GoogleAddress;
-import android.chub.io.chub.data.api.model.GoogleResponse;
+import android.chub.io.chub.data.api.model.GoogleAddressResponse;
 import android.chub.io.chub.widget.DividerItemDecoration;
-import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -71,15 +70,15 @@ public class SearchFragment extends BaseFragment {
         mGeocodingService.getAddress(query, location, mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .filter(new Func1<GoogleResponse<GoogleAddress>, Boolean>() {
+                .filter(new Func1<GoogleAddressResponse<GoogleAddress>, Boolean>() {
                     @Override
-                    public Boolean call(GoogleResponse<GoogleAddress> response) {
+                    public Boolean call(GoogleAddressResponse<GoogleAddress> response) {
                         return mCurrentQuery.equals(query);
                     }
                 })
-                .subscribe(new Action1<GoogleResponse<GoogleAddress>>() {
+                .subscribe(new Action1<GoogleAddressResponse<GoogleAddress>>() {
                     @Override
-                    public void call(GoogleResponse<GoogleAddress> googleAddressGoogleResponse) {
+                    public void call(GoogleAddressResponse<GoogleAddress> googleAddressGoogleResponse) {
                         mAdapter.updateItems(googleAddressGoogleResponse.predictions);
                     }
                 });
@@ -88,7 +87,7 @@ public class SearchFragment extends BaseFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Activity activity = getActivity();
+        final Activity activity = getActivity();
         mLayoutManager = new LinearLayoutManager(activity);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(activity,
@@ -97,6 +96,12 @@ public class SearchFragment extends BaseFragment {
 
         // specify an adapter (see also next example)
         mAdapter = new SearchAdapter(new ArrayList<GoogleAddress>(0), activity);
+        mAdapter.setOnLocationClickListener(new SearchAdapter.LocationClickListener() {
+            @Override
+            public void onLocationClicked(GoogleAddress address) {
+                ((ChubActivity) activity).onDestinationSelected(address);
+            }
+        });
         mRecyclerView.setAdapter(mAdapter);
     }
 }
