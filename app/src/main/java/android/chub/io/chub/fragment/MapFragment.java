@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,10 +84,12 @@ public class MapFragment extends BaseFragment {
     public void displayFlags(LatLng latLng) {
         mMap.addMarker(new MarkerOptions()
                 .position(getCurrentLocation())
+                .anchor(0, 1)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_flag)));
 
         mMap.addMarker(new MarkerOptions()
                 .position(latLng)
+                .anchor(0, 1)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.flag_stop)));
     }
 
@@ -94,43 +97,10 @@ public class MapFragment extends BaseFragment {
         if (mMap == null)
             return;
         PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.addAll(decodePoly(polylines));
-        polylineOptions.width(14);
+        polylineOptions.addAll(PolyUtil.decode(polylines));
+        polylineOptions.width(getResources().getDimensionPixelSize(R.dimen.route_width));
         polylineOptions.color(getResources().getColor(R.color.route_color));
         mMap.addPolyline(polylineOptions);
-    }
-
-    private List decodePoly(String encoded) {
-
-        List poly = new ArrayList();
-        int index = 0, len = encoded.length();
-        int lat = 0, lng = 0;
-
-        while (index < len) {
-            int b, shift = 0, result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lat += dlat;
-
-            shift = 0;
-            result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lng += dlng;
-
-            LatLng p = new LatLng((((double) lat / 1E5)),
-                    (((double) lng / 1E5)));
-            poly.add(p);
-        }
-        return poly;
     }
 
     @Override
@@ -174,5 +144,11 @@ public class MapFragment extends BaseFragment {
     public void onLowMemory() {
         super.onLowMemory();
         mMapView.onLowMemory();
+    }
+
+    public void clearMarkers() {
+        if (mMap == null)
+            return;
+        mMap.clear();
     }
 }

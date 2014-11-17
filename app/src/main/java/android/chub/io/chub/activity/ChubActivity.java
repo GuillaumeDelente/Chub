@@ -251,7 +251,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     }
 
     public void onDestinationSelected(GoogleAddress address) {
+        mSearchView.setText(address.description);
         mSearchEditTextLayout.setCollapsedSearchBoxText(address.description);
+        mMapFragment.clearMarkers();
         exitSearchUi();
         LatLng currentLocation = mMapFragment.getCurrentLocation();
         mGeocodingService.getDirections(

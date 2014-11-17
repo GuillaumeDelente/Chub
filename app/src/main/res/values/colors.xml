@@ -8,7 +8,7 @@
         <color name="searchbox_hint_text_color">#737373</color>
         <color name="searchbox_icon_tint">@color/searchbox_hint_text_color</color>
 
-        <color name="route_color">#FFFF9429</color>
+        <color name="route_color">#FF03A9F4</color>
 
         <color name="search_result_matched">#FF737373</color>
         <color name="search_result">#FF000000</color>

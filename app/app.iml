@@ -96,6 +96,7 @@
     <orderEntry type="library" exported="" name="javax.inject-1" level="project" />
     <orderEntry type="library" exported="" name="okhttp-urlconnection-1.6.0" level="project" />
     <orderEntry type="library" exported="" name="rxjava-android-0.20.6" level="project" />
+    <orderEntry type="library" exported="" name="android-maps-utils-0.3.3" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3" level="project" />
     <orderEntry type="library" exported="" name="rxjava-core-0.20.6" level="project" />
     <orderEntry type="library" exported="" name="play-services-6.1.71" level="project" />
