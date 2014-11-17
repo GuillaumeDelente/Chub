@@ -10,7 +10,7 @@
     <ImageView android:id="@+id/icon"
                android:layout_height="wrap_content"
                android:layout_width="40dp"
-               android:src="@drawable/address_icon"
+               android:src="@drawable/ic_establishment"
                android:layout_centerVertical="true"
         />
 

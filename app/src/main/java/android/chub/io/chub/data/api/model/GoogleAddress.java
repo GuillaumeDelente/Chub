@@ -11,12 +11,15 @@ public class GoogleAddress {
     public final String description;
     public final Terms terms;
     public final List<MatchedString> matched_substrings;
+    public final List<String> types;
 
-    public GoogleAddress(String placeId, String description, Terms terms, List<MatchedString> matchedString) {
+    public GoogleAddress(String placeId, String description, Terms terms,
+                         List<MatchedString> matchedString, List<String> types) {
         this.place_id = placeId;
         this.description = description;
         this.terms = terms;
         this.matched_substrings = matchedString;
+        this.types = types;
     }
 
     public class MatchedString {

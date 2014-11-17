@@ -21,7 +21,7 @@ public interface GeocodingService  {
     Observable<GoogleResponse<GoogleAddress>>
     getAddress(@Query("latlng") String latLng);*/
 
-    @GET("/place/autocomplete/json?types=address&radius=1000") //
+    @GET("/place/autocomplete/json?radius=1000") //
     Observable<GoogleAddressResponse<GoogleAddress>>
     getAddress(@Query("input") String input,//
                @Query("location") String location,//

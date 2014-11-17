@@ -4,20 +4,18 @@ import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.Terms;
-import android.chub.io.chub.data.api.model.TermsTypeAdapter;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -35,11 +33,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
+        public ImageView mImageView;
         public TextView mTextView1;
         public TextView mTextView2;
         public ViewHolder(View view) {
             super(view);
+            mImageView = (ImageView) view.findViewById(R.id.icon);
             mTextView1 = (TextView) view.findViewById(android.R.id.text1);
             mTextView2 = (TextView) view.findViewById(android.R.id.text2);
         }
@@ -87,6 +86,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         holder.mTextView2.setText(String.format("%s %s",
                 TextUtils.isEmpty(terms.city) ? "" : terms.city.trim(),
                 TextUtils.isEmpty(terms.state) ? "" : ", " + terms.state));
+        if (address.types.contains("establishment")) {
+            holder.mImageView.setImageResource(R.drawable.ic_establishment);
+        } else {
+            holder.mImageView.setImageResource(R.drawable.ic_address);
+        }
         if (mLocationClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
