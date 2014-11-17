@@ -35,6 +35,8 @@ import rx.schedulers.Schedulers;
 public class SearchFragment extends BaseFragment {
 
     private static final String TAG = "SearchFragment";
+    private static final String KEY_LOCATION = "location";
+    private static final String KEY_QUERY = "query";
     @Inject
     GeocodingService mGeocodingService;
     @Inject
@@ -44,6 +46,7 @@ public class SearchFragment extends BaseFragment {
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private String mCurrentQuery = "";
+    private String mLocation = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -66,6 +69,7 @@ public class SearchFragment extends BaseFragment {
             mAdapter.updateItems(new ArrayList<GoogleAddress>(0));
             return;
         }
+        mLocation = location;
         mCurrentQuery = query;
         mGeocodingService.getAddress(query, location, mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
@@ -103,5 +107,18 @@ public class SearchFragment extends BaseFragment {
             }
         });
         mRecyclerView.setAdapter(mAdapter);
+        if (savedInstanceState != null) {
+            mLocation = savedInstanceState.getString(KEY_LOCATION);
+            mCurrentQuery = savedInstanceState.getString(KEY_QUERY);
+        }
+        if (mLocation != null)
+            setQueryString(mCurrentQuery, mLocation);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_LOCATION, mLocation);
+        outState.putString(KEY_QUERY, mCurrentQuery);
     }
 }

@@ -43,12 +43,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private static final String TAG = "ChubActivity";
     public static final String SEARCH_FRAGMENT = "search_fragment";
     public static final String MAP_FRAGMENT = "map_fragment";
+    private static final String KEY_SEARCH_QUERY = "search_query";
+    private static final String KEY_IN_SEARCH_UI = "in_search_ui";
     private ActionBarController mActionBarController;
     private EditText mSearchView;
     private SearchEditTextLayout mSearchEditTextLayout;
     private int mActionBarHeight;
     private String mSearchQuery;
-    private boolean mInRegularSearch;
+    private boolean mInSearchUi;
     private FrameLayout mParentLayout;
     private Toolbar mToolbar;
     private SearchFragment mSearchFragment;
@@ -63,14 +65,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_layout);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container,
-                            android.support.v4.app.Fragment.instantiate(this,
-                                    MapFragment.class.getName(), null),
-                            MAP_FRAGMENT)
-                    .commit();
-        }
         mToolbar = (Toolbar) findViewById(R.id.actionBar);
         final Resources resources = getResources();
         setSupportActionBar(mToolbar);
@@ -81,18 +75,30 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mActionBarController = new ActionBarController(this, mSearchEditTextLayout);
         mSearchEditTextLayout.setPreImeKeyListener(mSearchEditTextLayoutListener);
         mSearchView = (EditText) mSearchEditTextLayout.findViewById(R.id.search_view);
-        mSearchView.addTextChangedListener(mPhoneSearchQueryTextListener);
+        mSearchView.addTextChangedListener(mSearchQueryTextListener);
         mSearchEditTextLayout.findViewById(R.id.search_magnifying_glass)
                 .setOnClickListener(mSearchViewOnClickListener);
         mSearchEditTextLayout.findViewById(R.id.search_box_start_search)
                 .setOnClickListener(mSearchViewOnClickListener);
         mSearchEditTextLayout.setOnBackButtonClickedListener(
                 new SearchEditTextLayout.OnBackButtonClickedListener() {
-                    @Override
-                    public void onBackButtonClicked() {
-                        onBackPressed();
-                    }
-                });
+            @Override
+            public void onBackButtonClicked() {
+                onBackPressed();
+            }
+        });
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container,
+                            android.support.v4.app.Fragment.instantiate(this,
+                                    MapFragment.class.getName(), null),
+                            MAP_FRAGMENT)
+                    .commit();
+        } else {
+            mSearchQuery = savedInstanceState.getString(KEY_SEARCH_QUERY);
+            mInSearchUi = savedInstanceState.getBoolean(KEY_IN_SEARCH_UI);
+            mActionBarController.restoreInstanceState(savedInstanceState);
+        }
     }
 
     @Override
@@ -108,7 +114,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     /*
             * Listener used to send search queries to the phone search fragment.
             */
-    private final TextWatcher mPhoneSearchQueryTextListener = new TextWatcher() {
+    private final TextWatcher mSearchQueryTextListener = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
@@ -140,7 +146,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     location = String.format("%f,%f", position.latitude,
                             position.longitude);
                 }
-                mSearchFragment.setQueryString(mSearchQuery, location != null ? location : "37,36");
+                mSearchFragment.setQueryString(mSearchQuery, location);
             }
         }
 
@@ -176,9 +182,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         }
 
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Entering search UI - smart dial ");
+            Log.d(TAG, "Entering search UI");
         }
-        mInRegularSearch = true;
+        mInSearchUi = true;
         final FragmentManager fragmentManager = getSupportFragmentManager();
         final FragmentTransaction transaction = fragmentManager.beginTransaction();
         SearchFragment fragment = (SearchFragment) fragmentManager.findFragmentByTag(SEARCH_FRAGMENT);
@@ -202,7 +208,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         public boolean onKey(View v, int keyCode, KeyEvent event) {
             if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN &&
                     TextUtils.isEmpty(mSearchView.getText().toString())) {
-                maybeExitSearchUi();
+                return maybeExitSearchUi();
             }
             return false;
         }
@@ -230,7 +236,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (fragmentManager.isDestroyed()) {
             return;
         }
-        mInRegularSearch = false;
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "exitSearchUi");
+
+        mInSearchUi = false;
 
         final FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.remove(fragmentManager.findFragmentByTag(SEARCH_FRAGMENT));
@@ -242,12 +251,26 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
     @Override
     public void onBackPressed() {
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "onBackPressed");
         if (isInSearchUi()) {
+            if (BuildConfig.DEBUG)
+                Log.d(TAG, "onBackPressed in search ui");
             exitSearchUi();
             DialerUtils.hideInputMethod(mParentLayout);
         } else {
+            if (BuildConfig.DEBUG)
+                Log.d(TAG, "onBackPressed not in search ui");
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_SEARCH_QUERY, mSearchQuery);
+        outState.putBoolean(KEY_IN_SEARCH_UI, mInSearchUi);
+        mActionBarController.saveInstanceState(outState);
     }
 
     public void onDestinationSelected(GoogleAddress address) {
@@ -284,7 +307,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
     @Override
     public boolean isInSearchUi() {
-        return mInRegularSearch;
+        return mInSearchUi;
     }
 
     @Override
