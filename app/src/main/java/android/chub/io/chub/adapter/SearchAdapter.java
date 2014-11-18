@@ -71,25 +71,34 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         // - replace the contents of the view with that element
         final GoogleAddress address = mDataset.get(position);
         Terms terms = address.terms;
-        final SpannableString spannableString = new SpannableString(String.format("%s %s",
-                TextUtils.isEmpty(terms.number) ? "" : terms.number,
+        boolean isFirstTermEmpty = TextUtils.isEmpty(terms.number);
+        final SpannableString spannableString = new SpannableString(String.format("%s%s%s",
+                isFirstTermEmpty ? "" : terms.number,
+                isFirstTermEmpty ? "" :
+                        address.description.contains(terms.number + ",") ? ", " : " ",
                 TextUtils.isEmpty(terms.address) ? "" : terms.address));
-        ForegroundColorSpan span = new ForegroundColorSpan(
-                mResources.getColor(R.color.search_result_matched));
+        ForegroundColorSpan span;
+        int spanStart;
+        int spanEnd;
         for (GoogleAddress.MatchedString matchedString : address.matched_substrings) {
-            spannableString.setSpan(span, matchedString.offset,
-                    matchedString.offset + matchedString.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spanStart = matchedString.offset;
+            spanEnd = spanStart + matchedString.length;
+            if (spanEnd > spannableString.length())
+                break;
+            span = new ForegroundColorSpan(
+                    mResources.getColor(R.color.search_result_matched));
+            spannableString.setSpan(span, spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             if (BuildConfig.DEBUG)
                 Log.d(TAG, "Matched string " + matchedString.offset + " " + matchedString.length);
         }
         holder.mTextView1.setText(spannableString);
-        holder.mTextView2.setText(String.format("%s %s",
+        holder.mTextView2.setText(String.format("%s%s",
                 TextUtils.isEmpty(terms.city) ? "" : terms.city.trim(),
                 TextUtils.isEmpty(terms.state) ? "" : ", " + terms.state));
-        if (address.types.contains("establishment")) {
-            holder.mImageView.setImageResource(R.drawable.ic_establishment);
-        } else {
+        if (address.types.contains("street_address") || address.types.contains("route")) {
             holder.mImageView.setImageResource(R.drawable.ic_address);
+        } else {
+            holder.mImageView.setImageResource(R.drawable.ic_establishment);
         }
         if (mLocationClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
