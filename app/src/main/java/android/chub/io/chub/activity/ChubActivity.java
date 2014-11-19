@@ -8,6 +8,7 @@ import android.chub.io.chub.data.api.ChubService;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.AuthToken;
 import android.chub.io.chub.data.api.model.Chub;
+import android.chub.io.chub.data.api.model.Destination;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
 import android.chub.io.chub.data.api.model.GooglePlace;
@@ -42,6 +43,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -68,6 +70,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private SearchFragment mSearchFragment;
     private MapFragment mMapFragment;
     private ImageButton mShareLocationFab;
+    private Destination mDestination;
     @Inject
     GeocodingService mGeocodingService;
     @Inject
@@ -134,7 +137,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
     private void createChub() {
         if (mUserPreferences.getAuthTokenPreference().isSet()) {
-            mChubService.createChub(new HashMap()).subscribeOn(Schedulers.io())
+            Map body = new HashMap<String, Object>();
+            body.put("destination", mDestination);
+            mChubService.createChub(body).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Action1<Chub>() {
                         @Override
@@ -329,7 +334,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mActionBarController.saveInstanceState(outState);
     }
 
-    public void onDestinationSelected(GoogleAddress address) {
+    public void onDestinationSelected(final GoogleAddress address) {
         mSearchView.setText(address.description);
         mSearchEditTextLayout.setCollapsedSearchBoxText(address.description);
         mMapFragment.clearMarkers();
@@ -356,9 +361,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         LatLng latLng = new LatLng(place.result.geometry.location.lat,
                                 place.result.geometry.location.lng);
                         mMapFragment.displayFlags(latLng);
+                        mDestination = new Destination(address.description,
+                                latLng.latitude, latLng.longitude);
                     }
                 });
-
     }
 
     @Override

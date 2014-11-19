@@ -23,7 +23,7 @@ public class ChubLocationService extends IntentService implements
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener,
         LocationListener {
-    private static final String ACTION_TRACK_LOCATION = "android.chub.io.chub.service.action.FOO";
+    private static final String ACTION_TRACK_LOCATION = "android.chub.io.chub.service.action.TRACK_LOCATION";
     private static final String KEY_CHUB_ID = "chub_id";
     private static final int UPDATE_INTERVAL = 5;
     private static final int FASTEST_INTERVAL = 5;
@@ -45,6 +45,7 @@ public class ChubLocationService extends IntentService implements
     public static void startLocationTracking(Context context, long chubId) {
         Intent intent = new Intent(context, ChubLocationService.class);
         intent.putExtra(KEY_CHUB_ID, chubId);
+        intent.setAction(ACTION_TRACK_LOCATION);
         context.startService(intent);
     }
 
@@ -74,22 +75,23 @@ public class ChubLocationService extends IntentService implements
         // Set the fastest update interval to 1 second
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mChubId = chubId;
-        if (mLocationClient.isConnected())
-            mLocationClient.requestLocationUpdates(mLocationRequest, this);
+        Log.d(TAG, "Location connection");
     }
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.d(TAG, "Location service connected" );
+        Log.d(TAG, "Location service connected");
+        mLocationClient.requestLocationUpdates(mLocationRequest, this);
     }
 
     @Override
     public void onDisconnected() {
-
+        Log.d(TAG, "Location disconnected");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d(TAG, "Location failed ");
         if (connectionResult.hasResolution()) {
 
             //TODO send back to the activity an error state
