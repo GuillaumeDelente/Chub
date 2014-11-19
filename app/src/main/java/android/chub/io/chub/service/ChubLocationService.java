@@ -9,9 +9,11 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -20,16 +22,14 @@ import com.google.android.gms.location.LocationRequest;
  * helper methods.
  */
 public class ChubLocationService extends IntentService implements
-        GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String ACTION_TRACK_LOCATION = "android.chub.io.chub.service.action.TRACK_LOCATION";
     private static final String KEY_CHUB_ID = "chub_id";
     private static final int UPDATE_INTERVAL = 5;
     private static final int FASTEST_INTERVAL = 5;
     private static final String TAG = "ChubLocationService";
-    private LocationClient mLocationClient;
     private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
     private long mChubId;
 
     public ChubLocationService() {
@@ -64,8 +64,12 @@ public class ChubLocationService extends IntentService implements
      * parameters.
      */
     private void handleActionTrackLocation(long chubId) {
-        mLocationClient = new LocationClient(getApplicationContext(), this, this);
-        mLocationClient.connect();
+        mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        mGoogleApiClient.connect();
         mLocationRequest = LocationRequest.create();
         // Use high accuracy
         mLocationRequest.setPriority(
@@ -81,32 +85,13 @@ public class ChubLocationService extends IntentService implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Location service connected");
-        mLocationClient.requestLocationUpdates(mLocationRequest, this);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                mLocationRequest, this);
     }
 
     @Override
-    public void onDisconnected() {
-        Log.d(TAG, "Location disconnected");
-    }
+    public void onConnectionSuspended(int i) {
 
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d(TAG, "Location failed ");
-        if (connectionResult.hasResolution()) {
-
-            //TODO send back to the activity an error state
-            /*
-            try {
-                // Start an Activity that tries to resolve the error
-
-                connectionResult.startResolutionForResult(
-                        this,
-                        CONNECTION_FAILURE_RESOLUTION_REQUEST);
-            } catch (IntentSender.SendIntentException e) {
-                // Log the error
-                e.printStackTrace();
-            }*/
-        }
     }
 
     @Override
@@ -116,8 +101,13 @@ public class ChubLocationService extends IntentService implements
 
     @Override
     public void onDestroy() {
-        if (mLocationClient != null)
-            mLocationClient.disconnect();
+        if (mGoogleApiClient != null)
+            mGoogleApiClient.disconnect();
         super.onDestroy();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        //TODO handle connection failure by opening resolution activity
     }
 }
