@@ -1,9 +1,13 @@
 package android.chub.io.chub.activity;
 
+import android.accounts.AccountManager;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.ApiKey;
+import android.chub.io.chub.data.api.ChubService;
 import android.chub.io.chub.data.api.GeocodingService;
+import android.chub.io.chub.data.api.model.AuthToken;
+import android.chub.io.chub.data.api.model.Chub;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
 import android.chub.io.chub.data.api.model.GooglePlace;
@@ -11,10 +15,13 @@ import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.chub.io.chub.data.api.model.GoogleRoute;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
+import android.chub.io.chub.service.ChubLocationService;
 import android.chub.io.chub.util.DialerUtils;
+import android.chub.io.chub.util.UserPreferences;
 import android.chub.io.chub.widget.ActionBarController;
 import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.content.res.Resources;
+import android.graphics.Outline;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -26,10 +33,15 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+
+import java.util.HashMap;
 
 import javax.inject.Inject;
 
@@ -55,11 +67,16 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private Toolbar mToolbar;
     private SearchFragment mSearchFragment;
     private MapFragment mMapFragment;
+    private ImageButton mShareLocationFab;
     @Inject
     GeocodingService mGeocodingService;
     @Inject
     @ApiKey
     String mGoogleApiKey;
+    @Inject
+    ChubService mChubService;
+    @Inject
+    UserPreferences mUserPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +104,20 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 onBackPressed();
             }
         });
+        mShareLocationFab = (ImageButton) findViewById(R.id.share_location_fab);
+        final int size = getResources().getDimensionPixelSize(R.dimen.fab_size);
+        mShareLocationFab.setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, Outline outline) {
+                outline.setOval(0, 0, size, size);
+            }
+        });
+        mShareLocationFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createChub();
+            }
+        });
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container,
@@ -98,6 +129,31 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             mSearchQuery = savedInstanceState.getString(KEY_SEARCH_QUERY);
             mInSearchUi = savedInstanceState.getBoolean(KEY_IN_SEARCH_UI);
             mActionBarController.restoreInstanceState(savedInstanceState);
+        }
+    }
+
+    private void createChub() {
+        if (mUserPreferences.getAuthTokenPreference().isSet()) {
+            mChubService.createChub(new HashMap()).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<Chub>() {
+                        @Override
+                        public void call(Chub chub) {
+                            Toast.makeText(ChubActivity.this, "Chub id " + chub.id,
+                                    Toast.LENGTH_SHORT).show();
+                            ChubLocationService.startLocationTracking(getApplicationContext(),
+                                    chub.id);
+                        }
+                    });
+        } else {
+            mChubService.createToken(new HashMap()).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<AuthToken>() {
+                        @Override
+                        public void call(AuthToken authToken) {
+                            mUserPreferences.getAuthTokenPreference().set(authToken.value);
+                        }
+                    });
         }
     }
 
@@ -191,7 +247,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         //transaction.setCustomAnimations(android.R.animator.fade_in, 0);
         if (fragment == null) {
             fragment = new SearchFragment();
-            transaction.add(R.id.dialtacts_frame, fragment, SEARCH_FRAGMENT);
+            transaction.add(R.id.fragment_container, fragment, SEARCH_FRAGMENT);
         } else {
             transaction.show(fragment);
         }

@@ -11,24 +11,4 @@
     android:layout_height="match_parent"
     map:uiZoomControls="false"/>
 
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageButton
-            android:id="@+id/share_location_fab"
-            android:layout_width="@dimen/fab_size"
-            android:layout_height="@dimen/fab_size"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="@dimen/fab_margin"
-            android:background="@drawable/ripple"
-            android:stateListAnimator="@drawable/anim"
-            android:src="@android:drawable/ic_menu_send"
-            android:elevation="4dp"
-            />
-
-    </FrameLayout>
-
 </FrameLayout>

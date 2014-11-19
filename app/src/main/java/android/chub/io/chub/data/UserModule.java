@@ -2,6 +2,7 @@ package android.chub.io.chub.data;
 
 import android.app.Application;
 import android.chub.io.chub.data.api.ApiModule;
+import android.chub.io.chub.util.UserPreferences;
 
 import com.squareup.okhttp.OkHttpClient;
 
@@ -15,19 +16,15 @@ import dagger.Provides;
  */
 
 @Module(
-        includes = {
-                ApiModule.class,
-                UserModule.class,
-        },
         complete = false,
         library = true
 )
-public class DataModule {
+public class UserModule {
 
     @Provides
     @Singleton
-    OkHttpClient provideOkHttpClient(Application app) {
-        return new OkHttpClient();
+    UserPreferences provideUserPreference(Application app) {
+        return new UserPreferences(app);
     }
 
 }

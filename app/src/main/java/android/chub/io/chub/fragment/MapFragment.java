@@ -1,18 +1,12 @@
 package android.chub.io.chub.fragment;
 
 import android.chub.io.chub.R;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Outline;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewOutlineProvider;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,14 +14,9 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -38,7 +27,6 @@ public class MapFragment extends BaseFragment {
     private static final String TAG = "MapFragment";
     private static final String SEARCH_FRAGMENT = "search_fragment";
     private MapView mMapView;
-    private ImageButton mShareLocationFab;
     private GoogleMap mMap;
 
     @Override
@@ -52,26 +40,6 @@ public class MapFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         mMapView = (MapView) view.findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
-        mShareLocationFab = (ImageButton) view.findViewById(R.id.share_location_fab);
-        final int size = getResources().getDimensionPixelSize(R.dimen.fab_size);
-        mShareLocationFab.setOutlineProvider(new ViewOutlineProvider() {
-            @Override
-            public void getOutline(View view, Outline outline) {
-                outline.setOval(0, 0, size, size);
-            }
-        });
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        final Resources resources = getActivity().getResources();
-        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            ((FrameLayout.LayoutParams) mShareLocationFab.getLayoutParams()).bottomMargin =
-                    resources.getDimensionPixelSize(resourceId)
-                            + resources.getDimensionPixelSize(R.dimen.fab_margin);
-        }
     }
 
     public LatLng getCurrentLocation() {

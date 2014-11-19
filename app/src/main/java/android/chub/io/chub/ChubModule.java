@@ -27,13 +27,13 @@ import javax.inject.Singleton;
 )
 
 public class ChubModule {
-        private final ChubApp app;
+    private final ChubApp app;
 
-        public ChubModule(ChubApp app) {
+    public ChubModule(ChubApp app) {
             this.app = app;
         }
 
-        @Provides @Singleton Application provideApplication() {
+    @Provides @Singleton Application provideApplication() {
             return app;
         }
 
