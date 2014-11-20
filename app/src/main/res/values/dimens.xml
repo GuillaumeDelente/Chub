@@ -55,4 +55,5 @@ room to the search box-->
     <dimen name="search_result2_textsize">14sp</dimen>
     <dimen name="divider_padding_left">68dp</dimen>
     <dimen name="route_width">6dp</dimen>
+    <dimen name="search_box_expendend_height">60dp</dimen>
 </resources>

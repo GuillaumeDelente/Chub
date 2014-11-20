@@ -1,6 +1,12 @@
 package android.chub.io.chub.service;
 
 import android.app.IntentService;
+import android.chub.io.chub.ChubApp;
+import android.chub.io.chub.data.api.ChubService;
+import android.chub.io.chub.data.api.model.ChubLocation;
+import android.chub.io.chub.data.api.model.Destination;
+import android.chub.io.chub.data.api.model.GooglePlace;
+import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.content.Intent;
 import android.content.Context;
 import android.location.Location;
@@ -14,6 +20,13 @@ import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+
+import javax.inject.Inject;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -31,6 +44,8 @@ public class ChubLocationService extends IntentService implements
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
+    @Inject
+    ChubService mChubService;
 
     public ChubLocationService() {
         super("ChubService");
@@ -64,6 +79,7 @@ public class ChubLocationService extends IntentService implements
      * parameters.
      */
     private void handleActionTrackLocation(long chubId) {
+        ((ChubApp) getApplicationContext()).inject(this);
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -97,6 +113,15 @@ public class ChubLocationService extends IntentService implements
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "Location changed " + location);
+        mChubService.postLocation(new ChubLocation(mChubId, location.getLatitude(),
+                location.getLongitude())).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<ChubLocation>() {
+                    @Override
+                    public void call(ChubLocation place) {
+
+                    }
+                });
     }
 
     @Override

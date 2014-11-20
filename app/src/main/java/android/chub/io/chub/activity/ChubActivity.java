@@ -8,6 +8,7 @@ import android.chub.io.chub.data.api.ChubService;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.AuthToken;
 import android.chub.io.chub.data.api.model.Chub;
+import android.chub.io.chub.data.api.model.ChubLocation;
 import android.chub.io.chub.data.api.model.Destination;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
@@ -148,6 +149,15 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     Toast.LENGTH_SHORT).show();
                             ChubLocationService.startLocationTracking(getApplicationContext(),
                                     chub.id);
+                            mChubService.postLocation(new ChubLocation(chub.id, 1,
+                                    2)).subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Action1<ChubLocation>() {
+                                        @Override
+                                        public void call(ChubLocation place) {
+
+                                        }
+                                    });
                         }
                     });
         } else {
@@ -252,7 +262,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         //transaction.setCustomAnimations(android.R.animator.fade_in, 0);
         if (fragment == null) {
             fragment = new SearchFragment();
-            transaction.add(R.id.fragment_container, fragment, SEARCH_FRAGMENT);
+            transaction.add(R.id.search_fragment_container, fragment, SEARCH_FRAGMENT);
         } else {
             transaction.show(fragment);
         }

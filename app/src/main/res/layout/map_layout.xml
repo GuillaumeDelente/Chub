@@ -17,6 +17,26 @@
         android:layout_width="match_parent"
         android:fitsSystemWindows="true">
 
+        <ImageButton
+            android:id="@+id/share_location_fab"
+            android:layout_width="@dimen/fab_size"
+            android:layout_height="@dimen/fab_size"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginBottom="@dimen/fab_margin"
+            android:background="@drawable/ripple"
+            android:stateListAnimator="@drawable/anim"
+            android:src="@android:drawable/ic_menu_send"
+            android:elevation="4dp"
+            android:layout_gravity="bottom|right"
+            />
+
+        <FrameLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/search_box_expendend_height"
+            android:id="@+id/search_fragment_container"
+            android:clipChildren="false" />
+
         <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
                                            xmlns:app="http://schemas.android.com/apk/res-auto"
                                            android:id="@+id/actionBar"
@@ -24,20 +44,10 @@
                                            android:layout_height="@dimen/action_bar_height_large"
                                            app:contentInsetEnd="0dp"
                                            app:contentInsetStart="0dp">
+
             <include layout="@layout/search_edittext"/>
+
         </android.support.v7.widget.Toolbar>
 
-            <ImageButton
-                android:id="@+id/share_location_fab"
-                android:layout_width="@dimen/fab_size"
-                android:layout_height="@dimen/fab_size"
-                android:layout_marginRight="@dimen/fab_margin"
-                android:layout_marginBottom="@dimen/fab_margin"
-                android:background="@drawable/ripple"
-                android:stateListAnimator="@drawable/anim"
-                android:src="@android:drawable/ic_menu_send"
-                android:elevation="4dp"
-                android:layout_gravity="bottom|right"
-                />
     </FrameLayout>
 </FrameLayout>
