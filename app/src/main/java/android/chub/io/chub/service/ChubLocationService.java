@@ -1,8 +1,11 @@
 package android.chub.io.chub.service;
 
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.chub.io.chub.ChubApp;
+import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.ChubService;
 import android.chub.io.chub.data.api.model.ChubLocation;
 import android.chub.io.chub.data.api.model.Destination;
@@ -10,9 +13,11 @@ import android.chub.io.chub.data.api.model.GooglePlace;
 import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.content.Intent;
 import android.content.Context;
+import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -38,10 +43,12 @@ import rx.schedulers.Schedulers;
  */
 public class ChubLocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String ACTION_TRACK_LOCATION = "android.chub.io.chub.service.action.TRACK_LOCATION";
+    private static final String ACTION_STOP_TRACKING = "android.chub.io.chub.service.action.STOP_TRACKING";
     private static final String KEY_CHUB_ID = "chub_id";
     private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 5000;
     private static final String TAG = "ChubLocationService";
+    private static final int NOTIFICATION_ID = 1;
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
@@ -68,9 +75,21 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             final String action = intent.getAction();
             if (ACTION_TRACK_LOCATION.equals(action)) {
                 handleActionTrackLocation(intent.getLongExtra(KEY_CHUB_ID, -1));
+            } else if (ACTION_STOP_TRACKING.equals(action)) {
+                handleActionStopTracking();
             }
         }
         return START_STICKY;
+    }
+
+    private void handleActionStopTracking() {
+        mGoogleApiClient.disconnect();
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(NOTIFICATION_ID);
+        Context context = getApplicationContext();
+        Intent intent = new Intent(context, ChubLocationService.class);
+        getApplicationContext().stopService(intent);
     }
 
     /**
@@ -79,7 +98,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
      */
     private void handleActionTrackLocation(long chubId) {
         Log.d(TAG, "Location connection");
-        ((ChubApp) getApplicationContext()).inject(this);
+        ((ChubApp) getApplication()).inject(this);
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -95,6 +114,24 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mChubId = chubId;
         mGoogleApiClient.connect();
+        displayNotification();
+    }
+
+    private void displayNotification() {
+        Context context = getApplicationContext();
+        Intent dismissIntent = new Intent(this, ChubLocationService.class);
+        dismissIntent.setAction(ACTION_STOP_TRACKING);
+        PendingIntent stopIntent = PendingIntent.getService(this, 0, dismissIntent, 0);
+        Resources resources = context.getResources();
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.ic_notification_chub)
+                .setContentTitle(resources.getString(R.string.you_are_chubing))
+                .setContentText(resources.getString(R.string.location_shared))
+                .setColor(resources.getColor(R.color.chub_blue))
+                .addAction(R.drawable.ic_clear, getString(R.string.stop), stopIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     @Override

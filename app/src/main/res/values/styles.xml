@@ -6,6 +6,10 @@
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
 
+
+        <item name="colorAccent">@color/chub_blue</item>
+        <item name="colorControlHighlight">@color/chub_blue</item>
+
         <!--<item name="android:actionBarStyle">@style/DialtactsActionBarStyle</item>-->
     </style>
 
