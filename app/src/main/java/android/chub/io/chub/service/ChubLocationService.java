@@ -1,6 +1,7 @@
 package android.chub.io.chub.service;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.chub.io.chub.ChubApp;
 import android.chub.io.chub.data.api.ChubService;
 import android.chub.io.chub.data.api.model.ChubLocation;
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -34,22 +36,17 @@ import rx.schedulers.Schedulers;
  * <p/>
  * helper methods.
  */
-public class ChubLocationService extends IntentService implements
-        LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class ChubLocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String ACTION_TRACK_LOCATION = "android.chub.io.chub.service.action.TRACK_LOCATION";
     private static final String KEY_CHUB_ID = "chub_id";
-    private static final int UPDATE_INTERVAL = 5;
-    private static final int FASTEST_INTERVAL = 5;
+    private static final int UPDATE_INTERVAL = 5000;
+    private static final int FASTEST_INTERVAL = 5000;
     private static final String TAG = "ChubLocationService";
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
     @Inject
     ChubService mChubService;
-
-    public ChubLocationService() {
-        super("ChubService");
-    }
 
     /**
      * Starts this service to perform location tracking. If
@@ -65,13 +62,15 @@ public class ChubLocationService extends IntentService implements
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_TRACK_LOCATION.equals(action)) {
                 handleActionTrackLocation(intent.getLongExtra(KEY_CHUB_ID, -1));
             }
         }
+        return START_STICKY;
     }
 
     /**
@@ -79,13 +78,13 @@ public class ChubLocationService extends IntentService implements
      * parameters.
      */
     private void handleActionTrackLocation(long chubId) {
+        Log.d(TAG, "Location connection");
         ((ChubApp) getApplicationContext()).inject(this);
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-        mGoogleApiClient.connect();
         mLocationRequest = LocationRequest.create();
         // Use high accuracy
         mLocationRequest.setPriority(
@@ -95,14 +94,28 @@ public class ChubLocationService extends IntentService implements
         // Set the fastest update interval to 1 second
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mChubId = chubId;
-        Log.d(TAG, "Location connection");
+        mGoogleApiClient.connect();
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Location service connected");
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                mLocationRequest, this);
+                mLocationRequest, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        Log.d(TAG, "Location changed " + location);
+                        mChubService.postLocation(new ChubLocation(mChubId, location.getLatitude(),
+                                location.getLongitude())).subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Action1<ChubLocation>() {
+                                    @Override
+                                    public void call(ChubLocation place) {
+
+                                    }
+                                });
+                    }
+                });
     }
 
     @Override
@@ -111,24 +124,16 @@ public class ChubLocationService extends IntentService implements
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "Location changed " + location);
-        mChubService.postLocation(new ChubLocation(mChubId, location.getLatitude(),
-                location.getLongitude())).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ChubLocation>() {
-                    @Override
-                    public void call(ChubLocation place) {
-
-                    }
-                });
-    }
-
-    @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy");
         if (mGoogleApiClient != null)
             mGoogleApiClient.disconnect();
         super.onDestroy();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override

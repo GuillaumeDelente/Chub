@@ -149,15 +149,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     Toast.LENGTH_SHORT).show();
                             ChubLocationService.startLocationTracking(getApplicationContext(),
                                     chub.id);
-                            mChubService.postLocation(new ChubLocation(chub.id, 1,
-                                    2)).subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new Action1<ChubLocation>() {
-                                        @Override
-                                        public void call(ChubLocation place) {
-
-                                        }
-                                    });
                         }
                     });
         } else {
