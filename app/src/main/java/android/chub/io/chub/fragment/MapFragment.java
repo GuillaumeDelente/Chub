@@ -78,6 +78,7 @@ public class MapFragment extends BaseFragment {
         MapsInitializer.initialize(getActivity());
         mMap = mMapView.getMap();
         if (mMap != null) {
+            mMap.getUiSettings().setMyLocationButtonEnabled(false);
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
                 @Override

@@ -21,7 +21,7 @@ import rx.Observable;
 /**
  * Created by guillaume on 11/9/14.
  */
-public interface ChubService {
+public interface ChubApi {
 
     @POST("/authTokens/") //
     Observable<AuthToken>

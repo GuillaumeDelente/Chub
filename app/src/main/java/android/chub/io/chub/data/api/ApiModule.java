@@ -12,7 +12,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.OkHttpClient;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -91,8 +90,8 @@ public class ApiModule {
     }
 
     @Provides @Singleton
-    ChubService provideChubServiceService(@ChubRestAdapter RestAdapter restAdapter) {
-        return restAdapter.create(ChubService.class);
+    ChubApi provideChubServiceService(@ChubRestAdapter RestAdapter restAdapter) {
+        return restAdapter.create(ChubApi.class);
     }
 
     @Provides @Singleton @ApiKey String provideApiKey(Context context) {

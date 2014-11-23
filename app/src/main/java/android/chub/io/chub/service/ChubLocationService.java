@@ -6,11 +6,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.chub.io.chub.ChubApp;
 import android.chub.io.chub.R;
-import android.chub.io.chub.data.api.ChubService;
+import android.chub.io.chub.activity.ChubActivity;
+import android.chub.io.chub.data.api.ChubApi;
 import android.chub.io.chub.data.api.model.ChubLocation;
-import android.chub.io.chub.data.api.model.Destination;
-import android.chub.io.chub.data.api.model.GooglePlace;
-import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.content.Intent;
 import android.content.Context;
 import android.content.res.Resources;
@@ -18,16 +16,14 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
 import javax.inject.Inject;
 
@@ -53,7 +49,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
     @Inject
-    ChubService mChubService;
+    ChubApi mChubApi;
 
     /**
      * Starts this service to perform location tracking. If
@@ -83,7 +79,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     }
 
     private void handleActionStopTracking() {
-        mGoogleApiClient.disconnect();
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
+            mGoogleApiClient.disconnect();
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_ID);
@@ -122,12 +119,24 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         Intent dismissIntent = new Intent(this, ChubLocationService.class);
         dismissIntent.setAction(ACTION_STOP_TRACKING);
         PendingIntent stopIntent = PendingIntent.getService(this, 0, dismissIntent, 0);
+
+        Intent resultIntent = new Intent(this, ChubActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+// Adds the back stack
+        stackBuilder.addParentStack(ChubActivity.class);
+// Adds the Intent to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+// Gets a PendingIntent containing the entire back stack
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = context.getResources();
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notification_chub)
                 .setContentTitle(resources.getString(R.string.you_are_chubing))
                 .setContentText(resources.getString(R.string.location_shared))
                 .setColor(resources.getColor(R.color.chub_blue))
+                .setContentIntent(resultPendingIntent)
+                .setOngoing(true)
                 .addAction(R.drawable.ic_clear, getString(R.string.stop), stopIntent);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -142,7 +151,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                     @Override
                     public void onLocationChanged(Location location) {
                         Log.d(TAG, "Location changed " + location);
-                        mChubService.postLocation(new ChubLocation(mChubId, location.getLatitude(),
+                        mChubApi.postLocation(new ChubLocation(mChubId, location.getLatitude(),
                                 location.getLongitude())).subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Action1<ChubLocation>() {
@@ -158,14 +167,6 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     @Override
     public void onConnectionSuspended(int i) {
 
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy");
-        if (mGoogleApiClient != null)
-            mGoogleApiClient.disconnect();
-        super.onDestroy();
     }
 
     @Override

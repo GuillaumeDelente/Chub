@@ -1,14 +1,12 @@
 package android.chub.io.chub.activity;
 
-import android.accounts.AccountManager;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.ApiKey;
-import android.chub.io.chub.data.api.ChubService;
+import android.chub.io.chub.data.api.ChubApi;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.AuthToken;
 import android.chub.io.chub.data.api.model.Chub;
-import android.chub.io.chub.data.api.model.ChubLocation;
 import android.chub.io.chub.data.api.model.Destination;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
@@ -78,7 +76,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @ApiKey
     String mGoogleApiKey;
     @Inject
-    ChubService mChubService;
+    ChubApi mChubApi;
     @Inject
     UserPreferences mUserPreferences;
 
@@ -140,7 +138,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (mUserPreferences.getAuthTokenPreference().isSet()) {
             Map body = new HashMap<String, Object>();
             body.put("destination", mDestination);
-            mChubService.createChub(body).subscribeOn(Schedulers.io())
+            mChubApi.createChub(body).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Action1<Chub>() {
                         @Override
@@ -152,7 +150,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         }
                     });
         } else {
-            mChubService.createToken(new HashMap()).subscribeOn(Schedulers.io())
+            mChubApi.createToken(new HashMap()).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Action1<AuthToken>() {
                         @Override
