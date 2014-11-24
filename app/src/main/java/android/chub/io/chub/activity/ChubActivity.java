@@ -46,8 +46,10 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 
@@ -338,30 +340,34 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mSearchEditTextLayout.setCollapsedSearchBoxText(address.description);
         mMapFragment.clearMarkers();
         exitSearchUi();
-        LatLng currentLocation = mMapFragment.getCurrentLocation();
-        mGeocodingService.getDirections(
-                String.format("%f,%f", currentLocation.latitude,
-                        currentLocation.longitude),
-                address.description, mGoogleApiKey)
+        final LatLng currentLocation = mMapFragment.getCurrentLocation();
+        mGeocodingService.getPlaceDetails(address.place_id, mGoogleApiKey)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
+                        Observable<GoogleDirectionResponse<GoogleRoute>>>() {
+                    @Override
+                    public Observable<GoogleDirectionResponse<GoogleRoute>>
+                    call(GooglePlaceResponse<GooglePlace> googlePlaceGooglePlaceResponse) {
+                        LatLng destinationLatLng = new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
+                                googlePlaceGooglePlaceResponse.result.geometry.location.lng);
+                        mMapFragment.displayFlags(destinationLatLng);
+                        mDestination = new Destination(address.description,
+                                destinationLatLng.latitude, destinationLatLng.longitude);
+                        return mGeocodingService.getDirections(
+                                String.format("%f,%f", currentLocation.latitude,
+                                        currentLocation.longitude),
+                                String.format("%f,%f", destinationLatLng.latitude,
+                                        destinationLatLng.longitude),
+                                mGoogleApiKey);
+                    }
+                })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<GoogleDirectionResponse<GoogleRoute>>() {
                     @Override
-                    public void call(GoogleDirectionResponse<GoogleRoute> googleAddressGoogleResponse) {
-                        mMapFragment.displayRoute(googleAddressGoogleResponse.routes.get(0).overview_polyline.points);
-                    }
-                });
-        mGeocodingService.getPlaceDetails(address.place_id, mGoogleApiKey)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<GooglePlaceResponse<GooglePlace>>() {
-                    @Override
-                    public void call(GooglePlaceResponse<GooglePlace> place) {
-                        LatLng latLng = new LatLng(place.result.geometry.location.lat,
-                                place.result.geometry.location.lng);
-                        mMapFragment.displayFlags(latLng);
-                        mDestination = new Destination(address.description,
-                                latLng.latitude, latLng.longitude);
+                    public void call(GoogleDirectionResponse<GoogleRoute> googleRoute) {
+                        mMapFragment.displayRoute(googleRoute.routes.get(0).overview_polyline.points);
                     }
                 });
     }
