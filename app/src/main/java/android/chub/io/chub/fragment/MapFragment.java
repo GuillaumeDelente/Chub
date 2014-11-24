@@ -1,6 +1,7 @@
 package android.chub.io.chub.fragment;
 
 import android.chub.io.chub.R;
+import android.chub.io.chub.data.api.model.GoogleRoute;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,6 +15,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
@@ -61,14 +63,20 @@ public class MapFragment extends BaseFragment {
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.flag_stop)));
     }
 
-    public void displayRoute(String polylines) {
+    public void displayRoute(GoogleRoute googleRoute) {
         if (mMap == null)
             return;
         PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.addAll(PolyUtil.decode(polylines));
+        polylineOptions.addAll(PolyUtil.decode(googleRoute.overview_polyline.points));
         polylineOptions.width(getResources().getDimensionPixelSize(R.dimen.route_width));
         polylineOptions.color(getResources().getColor(R.color.route_color));
         mMap.addPolyline(polylineOptions);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.builder()
+                .include(new LatLng(googleRoute.bounds.southwest.lat,
+                        googleRoute.bounds.southwest.lng))
+                .include(new LatLng(googleRoute.bounds.northeast.lat,
+                        googleRoute.bounds.northeast.lng)).build(),
+                getResources().getDimensionPixelSize(R.dimen.map_bounds_padding)));
     }
 
     @Override

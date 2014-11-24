@@ -374,7 +374,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 .subscribe(new Action1<GoogleDirectionResponse<GoogleRoute>>() {
                     @Override
                     public void call(GoogleDirectionResponse<GoogleRoute> googleRoute) {
-                        mMapFragment.displayRoute(googleRoute.routes.get(0).overview_polyline.points);
+                        mMapFragment.displayRoute(googleRoute.routes.get(0));
                     }
                 });
     }
