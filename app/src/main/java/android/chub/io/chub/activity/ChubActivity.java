@@ -108,6 +108,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 onBackPressed();
             }
         });
+        mSearchEditTextLayout.setOnClearButtonViewClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mMapFragment != null)
+                    mMapFragment.clearMarkers();
+            }
+        });
         mShareLocationFab = (ImageButton) findViewById(R.id.share_location_fab);
         final int size = getResources().getDimensionPixelSize(R.dimen.fab_size);
         mShareLocationFab.setOutlineProvider(new ViewOutlineProvider() {

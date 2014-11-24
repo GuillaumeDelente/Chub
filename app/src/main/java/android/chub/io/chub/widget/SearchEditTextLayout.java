@@ -20,13 +20,12 @@ import android.chub.io.chub.R;
 import android.chub.io.chub.animation.AnimUtils;
 import android.chub.io.chub.util.DialerUtils;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class SearchEditTextLayout extends FrameLayout {
@@ -50,16 +49,21 @@ public class SearchEditTextLayout extends FrameLayout {
     private EditText mSearchView;
     private View mSearchIcon;
     private View mCollapsedSearchBox;
-    private View mVoiceSearchButtonView;
+    private View mClearButton;
     private View mOverflowButtonView;
     private View mBackButtonView;
     private View mExpandedSearchBox;
-    private View mClearButtonView;
+    private View mCollapsedClearButton;
     private TextView mSearchTextView;
 
     private ValueAnimator mAnimator;
 
     private OnBackButtonClickedListener mOnBackButtonClickedListener;
+    private OnClickListener mOnClearButtonViewClickListener;
+
+    public void setOnClearButtonViewClickListener(OnClickListener onClearButtonViewClickListener) {
+        mOnClearButtonViewClickListener = onClearButtonViewClickListener;
+    }
 
     /**
      * Listener for the back button next to the search view being pressed
@@ -96,13 +100,21 @@ public class SearchEditTextLayout extends FrameLayout {
 
         mSearchIcon = findViewById(R.id.search_magnifying_glass);
         mCollapsedSearchBox = findViewById(R.id.search_box_start_search);
-        mVoiceSearchButtonView = findViewById(R.id.voice_search_button);
+        mClearButton = findViewById(R.id.search_close_button);
         mOverflowButtonView = findViewById(R.id.dialtacts_options_menu_button);
         mBackButtonView = findViewById(R.id.search_back_button);
         mExpandedSearchBox = findViewById(R.id.search_box_expanded);
-        mClearButtonView = findViewById(R.id.search_close_button);
+        mCollapsedClearButton = findViewById(R.id.collapsed_clear_button);
+        mCollapsedClearButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mOnClearButtonViewClickListener != null)
+                    mOnClearButtonViewClickListener.onClick(view);
+                mSearchView.setText(null);
+                setCollapsedSearchBoxText(null);
+            }
+        });
         mSearchTextView = (TextView) findViewById(R.id.search_box_textview);
-
         mSearchView.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -169,6 +181,11 @@ public class SearchEditTextLayout extends FrameLayout {
     }
 
     public void setCollapsedSearchBoxText(String text) {
+        if (TextUtils.isEmpty(text)) {
+            mCollapsedClearButton.setVisibility(View.GONE);
+        } else {
+            mCollapsedClearButton.setVisibility(View.VISIBLE);
+        }
         mSearchTextView.setText(text);
     }
 
@@ -234,13 +251,14 @@ public class SearchEditTextLayout extends FrameLayout {
 
         mSearchIcon.setVisibility(collapsedViewVisibility);
         mCollapsedSearchBox.setVisibility(collapsedViewVisibility);
-        mVoiceSearchButtonView.setVisibility(collapsedViewVisibility);
+        mCollapsedClearButton.setVisibility(TextUtils.isEmpty(mSearchTextView.getText()) ? View.GONE :
+                collapsedViewVisibility);
         mOverflowButtonView.setVisibility(collapsedViewVisibility);
         mBackButtonView.setVisibility(expandedViewVisibility);
         // TODO: Prevents keyboard from jumping up in landscape mode after exiting the
         // SearchFragment when the query string is empty. More elegant fix?
         //mExpandedSearchBox.setVisibility(expandedViewVisibility);
-        mClearButtonView.setVisibility(expandedViewVisibility);
+        mClearButton.setVisibility(expandedViewVisibility);
     }
 
     private void prepareAnimator(final boolean expand) {

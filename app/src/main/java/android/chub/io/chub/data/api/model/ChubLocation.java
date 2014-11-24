@@ -5,13 +5,11 @@ package android.chub.io.chub.data.api.model;
  */
 public class ChubLocation {
 
-    public final long chub_id;
     public final double latitude;
     public final double longitude;
 
-    public ChubLocation(long chubId, double latitude, double longitude) {
-        this.chub_id = chubId;
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public ChubLocation(double latitude, double longitude) {
+        this.latitude = Double.valueOf(String.format("%.10f", latitude));
+        this.longitude = Double.valueOf(String.format("%.10f", longitude));
     }
 }

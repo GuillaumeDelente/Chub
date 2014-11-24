@@ -15,6 +15,7 @@ import java.util.Map;
 import retrofit.http.Body;
 import retrofit.http.GET;
 import retrofit.http.POST;
+import retrofit.http.Path;
 import retrofit.http.Query;
 import rx.Observable;
 
@@ -31,7 +32,7 @@ public interface ChubApi {
     Observable<Chub>
     createChub(@Body Map map);
 
-    @POST("/locations/") //
+    @POST("/chubs/{chubId}/locations/") //
     Observable<ChubLocation>
-    postLocation(@Body ChubLocation location);
+    postLocation(@Path("chubId") long chubId, @Body ChubLocation location);
 }

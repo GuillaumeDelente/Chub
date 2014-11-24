@@ -151,7 +151,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                     @Override
                     public void onLocationChanged(Location location) {
                         Log.d(TAG, "Location changed " + location);
-                        mChubApi.postLocation(new ChubLocation(mChubId, location.getLatitude(),
+                        mChubApi.postLocation(mChubId, new ChubLocation(location.getLatitude(),
                                 location.getLongitude())).subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Action1<ChubLocation>() {
