@@ -13,7 +13,7 @@ import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
 import android.chub.io.chub.data.api.model.GooglePlace;
 import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.chub.io.chub.data.api.model.GoogleRoute;
-import android.chub.io.chub.data.api.model.RealmLastChub;
+import android.chub.io.chub.data.api.model.RealmRecentChub;
 import android.chub.io.chub.data.api.model.RealmDestination;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
@@ -108,11 +108,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 .setOnClickListener(mSearchViewOnClickListener);
         mSearchEditTextLayout.setOnBackButtonClickedListener(
                 new SearchEditTextLayout.OnBackButtonClickedListener() {
-            @Override
-            public void onBackButtonClicked() {
-                onBackPressed();
-            }
-        });
+                    @Override
+                    public void onBackButtonClicked() {
+                        onBackPressed();
+                    }
+                });
         mSearchEditTextLayout.setOnClearButtonViewClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -164,7 +164,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         }
                     });
             mRealm.beginTransaction();
-            RealmLastChub lastChub = mRealm.createObject(RealmLastChub.class);
+            RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
             RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
             realmDestination.setName(mDestination.name);
             realmDestination.setLatitude(mDestination.latitude);

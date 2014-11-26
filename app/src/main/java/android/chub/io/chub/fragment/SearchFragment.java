@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.activity.ChubActivity;
+import android.chub.io.chub.adapter.RecentAdapter;
 import android.chub.io.chub.adapter.SearchAdapter;
 import android.chub.io.chub.data.api.ApiKey;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleAddressResponse;
+import android.chub.io.chub.data.api.model.RealmRecentChub;
 import android.chub.io.chub.widget.DividerItemDecoration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,6 +26,8 @@ import java.util.ArrayList;
 
 import javax.inject.Inject;
 
+import io.realm.Realm;
+import io.realm.RealmQuery;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -42,7 +46,10 @@ public class SearchFragment extends BaseFragment {
     @Inject
     @ApiKey
     String mGoogleApiKey;
-    private SearchAdapter mAdapter;
+    @Inject
+    Realm mRealm;
+    private SearchAdapter mPlacesAdapter;
+    private RecentAdapter mRecentAdapter;
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private String mCurrentQuery = "";
@@ -66,7 +73,8 @@ public class SearchFragment extends BaseFragment {
             Log.d(TAG, "setQueryString");
         if (TextUtils.isEmpty(query)) {
             mCurrentQuery = "";
-            mAdapter.updateItems(new ArrayList<GoogleAddress>(0));
+            mPlacesAdapter.updateItems(new ArrayList<GoogleAddress>(0));
+            mRecyclerView.setAdapter(mRecentAdapter);
             return;
         }
         mLocation = location;
@@ -83,9 +91,10 @@ public class SearchFragment extends BaseFragment {
                 .subscribe(new Action1<GoogleAddressResponse<GoogleAddress>>() {
                     @Override
                     public void call(GoogleAddressResponse<GoogleAddress> googleAddressGoogleResponse) {
-                        mAdapter.updateItems(googleAddressGoogleResponse.predictions);
+                        mPlacesAdapter.updateItems(googleAddressGoogleResponse.predictions);
                     }
                 });
+        mRecyclerView.setAdapter(mPlacesAdapter);
     }
 
     @Override
@@ -99,14 +108,16 @@ public class SearchFragment extends BaseFragment {
                 activity.getResources().getDimensionPixelSize(R.dimen.divider_padding_left)));
 
         // specify an adapter (see also next example)
-        mAdapter = new SearchAdapter(new ArrayList<GoogleAddress>(0), activity);
-        mAdapter.setOnLocationClickListener(new SearchAdapter.LocationClickListener() {
+        mPlacesAdapter = new SearchAdapter(new ArrayList<GoogleAddress>(0), activity);
+        RealmQuery<RealmRecentChub> query = mRealm.where(RealmRecentChub.class);
+        mRecentAdapter = new RecentAdapter(query.findAll(), activity);
+        mPlacesAdapter.setOnLocationClickListener(new SearchAdapter.LocationClickListener() {
             @Override
             public void onLocationClicked(GoogleAddress address) {
                 ((ChubActivity) activity).onDestinationSelected(address);
             }
         });
-        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mRecentAdapter);
         if (savedInstanceState != null) {
             mLocation = savedInstanceState.getString(KEY_LOCATION);
             mCurrentQuery = savedInstanceState.getString(KEY_QUERY);

@@ -6,7 +6,7 @@ import io.realm.RealmObject;
 /**
  * Created by guillaume on 11/25/14.
  */
-public class RealmLastChub extends RealmObject {
+public class RealmRecentChub extends RealmObject {
 
     private RealmList<RealmContacts> contacts;
     private RealmDestination destination;
