@@ -13,6 +13,8 @@ import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
 import android.chub.io.chub.data.api.model.GooglePlace;
 import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.chub.io.chub.data.api.model.GoogleRoute;
+import android.chub.io.chub.data.api.model.RealmLastChub;
+import android.chub.io.chub.data.api.model.RealmDestination;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
 import android.chub.io.chub.service.ChubLocationService;
@@ -46,6 +48,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.realm.Realm;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -81,6 +84,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     ChubApi mChubApi;
     @Inject
     UserPreferences mUserPreferences;
+    @Inject
+    Realm mRealm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +163,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     chub.id);
                         }
                     });
+            mRealm.beginTransaction();
+            RealmLastChub lastChub = mRealm.createObject(RealmLastChub.class);
+            RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
+            realmDestination.setName(mDestination.name);
+            realmDestination.setLatitude(mDestination.latitude);
+            realmDestination.setLongitude(mDestination.longitude);
+            lastChub.setDestination(realmDestination);
+            mRealm.commitTransaction();
         } else {
             mChubApi.createToken(new HashMap()).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

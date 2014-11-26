@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.realm.Realm;
 
 /**
  * Created by guillaume on 11/9/14.
@@ -28,6 +29,12 @@ public class DataModule {
     @Singleton
     OkHttpClient provideOkHttpClient(Application app) {
         return new OkHttpClient();
+    }
+
+    @Provides
+    @Singleton
+    Realm provideRealm(Application app) {
+        return Realm.getInstance(app);
     }
 
 }
