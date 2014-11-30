@@ -6,6 +6,7 @@ import io.realm.RealmObject;
  * Created by guillaume on 11/25/14.
  */
 public class RealmDestination extends RealmObject {
+    private String placeId;
     private String name;
     private double latitude;
     private double longitude;
@@ -32,5 +33,13 @@ public class RealmDestination extends RealmObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 }

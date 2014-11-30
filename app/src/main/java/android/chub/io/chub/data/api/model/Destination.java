@@ -5,13 +5,15 @@ package android.chub.io.chub.data.api.model;
  */
 public class Destination {
 
-        public final String name;
-        public final Double latitude;
-        public final Double longitude;
+    public final String id;
+    public final String name;
+    public final Double latitude;
+    public final Double longitude;
 
-        public Destination(String name, Double latitude, Double longitude) {
-            this.name = name;
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
+    public Destination(String id, String name, Double latitude, Double longitude) {
+        this.id = id;
+        this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 }

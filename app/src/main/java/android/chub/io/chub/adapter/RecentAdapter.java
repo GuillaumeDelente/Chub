@@ -1,27 +1,17 @@
 package android.chub.io.chub.adapter;
 
-import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.RealmRecentChub;
-import android.chub.io.chub.data.api.model.Terms;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.TextUtils;
-import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
-
-import io.realm.RealmList;
 import io.realm.RealmResults;
 
 /**
@@ -76,7 +66,7 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
         final RealmRecentChub recentChub = mDataset.get(position);
         holder.mTextView1.setText(recentChub.getDestination().getName());
         holder.mTextView2.setText("");
-        //holder.mImageView.setImageResource(R.drawable.ic_address);
+        holder.mImageView.setImageResource(R.drawable.ic_history);
         /*
         if (mLocationClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {

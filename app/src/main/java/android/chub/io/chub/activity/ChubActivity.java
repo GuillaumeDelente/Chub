@@ -42,6 +42,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.melnykov.fab.FloatingActionButton;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private Toolbar mToolbar;
     private SearchFragment mSearchFragment;
     private MapFragment mMapFragment;
-    private ImageButton mShareLocationFab;
+    private FloatingActionButton mShareLocationFab;
     private Destination mDestination;
     @Inject
     GeocodingService mGeocodingService;
@@ -120,7 +121,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     mMapFragment.clearMarkers();
             }
         });
-        mShareLocationFab = (ImageButton) findViewById(R.id.share_location_fab);
+        mShareLocationFab = (FloatingActionButton) findViewById(R.id.share_location_fab);
         final int size = getResources().getDimensionPixelSize(R.dimen.fab_size);
         mShareLocationFab.setOutlineProvider(new ViewOutlineProvider() {
             @Override
@@ -169,6 +170,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             realmDestination.setName(mDestination.name);
             realmDestination.setLatitude(mDestination.latitude);
             realmDestination.setLongitude(mDestination.longitude);
+            realmDestination.setPlaceId(mDestination.id);
             lastChub.setDestination(realmDestination);
             mRealm.commitTransaction();
         } else {
@@ -372,8 +374,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         LatLng destinationLatLng = new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
                                 googlePlaceGooglePlaceResponse.result.geometry.location.lng);
                         mMapFragment.displayFlags(destinationLatLng);
-                        mDestination = new Destination(address.description,
-                                destinationLatLng.latitude, destinationLatLng.longitude);
+                        mDestination = new Destination(
+                                googlePlaceGooglePlaceResponse.result.id,
+                                googlePlaceGooglePlaceResponse.result.name,
+                                destinationLatLng.latitude,
+                                destinationLatLng.longitude);
                         return mGeocodingService.getDirections(
                                 String.format("%f,%f", currentLocation.latitude,
                                         currentLocation.longitude),

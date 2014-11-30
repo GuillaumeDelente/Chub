@@ -6,9 +6,13 @@ package android.chub.io.chub.data.api.model;
 public class GooglePlace {
 
     public final Geometry geometry;
+    public final String id;
+    public final String name;
 
-    public GooglePlace(Geometry geometry) {
+    public GooglePlace(Geometry geometry, String id, String name) {
         this.geometry = geometry;
+        this.id = id;
+        this.name = name;
     }
 
     public class Geometry {
