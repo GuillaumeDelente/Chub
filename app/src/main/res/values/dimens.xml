@@ -57,4 +57,5 @@ room to the search box-->
     <dimen name="route_width">6dp</dimen>
     <dimen name="search_box_expendend_height">60dp</dimen>
     <dimen name="map_bounds_padding">60dp</dimen>
+    <dimen name="transport_mode_ic_width">60dp</dimen>
 </resources>

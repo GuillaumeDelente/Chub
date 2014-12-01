@@ -2,6 +2,7 @@ package android.chub.io.chub;
 
 import android.app.Application;
 import android.chub.io.chub.activity.ChubActivity;
+import android.chub.io.chub.activity.ShareActivity;
 import android.chub.io.chub.data.DataModule;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
@@ -22,6 +23,7 @@ import javax.inject.Singleton;
         injects = {
                 ChubApp.class,
                 ChubActivity.class,
+                ShareActivity.class,
                 MapFragment.class,
                 SearchFragment.class,
                 ChubLocationService.class,

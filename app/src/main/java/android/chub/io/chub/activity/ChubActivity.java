@@ -22,6 +22,7 @@ import android.chub.io.chub.util.DialerUtils;
 import android.chub.io.chub.util.UserPreferences;
 import android.chub.io.chub.widget.ActionBarController;
 import android.chub.io.chub.widget.SearchEditTextLayout;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Outline;
 import android.os.Bundle;
@@ -122,6 +123,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             }
         });
         mShareLocationFab = (FloatingActionButton) findViewById(R.id.share_location_fab);
+        /*
         final int size = getResources().getDimensionPixelSize(R.dimen.fab_size);
         mShareLocationFab.setOutlineProvider(new ViewOutlineProvider() {
             @Override
@@ -129,10 +131,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 outline.setOval(0, 0, size, size);
             }
         });
+        */
         mShareLocationFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createChub();
+                //createChub();
+                startActivity(new Intent(ChubActivity.this, ShareActivity.class), new Bundle());
             }
         });
         if (savedInstanceState == null) {
@@ -152,7 +156,18 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private void createChub() {
         if (mUserPreferences.getAuthTokenPreference().isSet()) {
             Map body = new HashMap<String, Object>();
-            body.put("destination", mDestination);
+            if (mDestination != null) {
+                mRealm.beginTransaction();
+                RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
+                RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
+                realmDestination.setName(mDestination.name);
+                realmDestination.setLatitude(mDestination.latitude);
+                realmDestination.setLongitude(mDestination.longitude);
+                realmDestination.setPlaceId(mDestination.id);
+                lastChub.setDestination(realmDestination);
+                mRealm.commitTransaction();
+                body.put("destination", mDestination);
+            }
             mChubApi.createChub(body).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Action1<Chub>() {
@@ -164,15 +179,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     chub.id);
                         }
                     });
-            mRealm.beginTransaction();
-            RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
-            RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
-            realmDestination.setName(mDestination.name);
-            realmDestination.setLatitude(mDestination.latitude);
-            realmDestination.setLongitude(mDestination.longitude);
-            realmDestination.setPlaceId(mDestination.id);
-            lastChub.setDestination(realmDestination);
-            mRealm.commitTransaction();
         } else {
             mChubApi.createToken(new HashMap()).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

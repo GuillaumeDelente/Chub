@@ -1,0 +1,48 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/container"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context=".Chub"
+             tools:ignore="MergeRootFrame">
+
+    <android.support.v7.widget.Toolbar
+        style="@style/ShareActionBarStyle"
+        android:id="@+id/toolbar"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent" >
+
+        <ImageButton
+            android:id="@+id/car_button"
+            android:layout_height="match_parent"
+            android:layout_width="@dimen/transport_mode_ic_width"
+            android:background="@null"
+            android:src="@drawable/ic_car_selector"
+            android:gravity="center"/>
+
+        <ImageButton
+            android:id="@+id/transit_button"
+            android:layout_height="wrap_content"
+            android:layout_width="@dimen/transport_mode_ic_width"
+            android:background="@null"
+            android:src="@drawable/ic_transit_selector"
+            android:gravity="center"/>
+
+        <ImageButton
+            android:id="@+id/bike_button"
+            android:layout_height="wrap_content"
+            android:layout_width="@dimen/transport_mode_ic_width"
+            android:background="@null"
+            android:src="@drawable/ic_bike_selector"
+            android:gravity="center"/>
+
+        <ImageButton
+            android:id="@+id/walk_button"
+            android:layout_height="wrap_content"
+            android:layout_width="@dimen/transport_mode_ic_width"
+            android:background="@null"
+            android:src="@drawable/ic_walk_selector"/>
+
+        </android.support.v7.widget.Toolbar>
+
+</FrameLayout>

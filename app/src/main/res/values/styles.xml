@@ -1,16 +1,15 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="ChubTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
-
-
+    <style name="ChubTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorAccent">@color/chub_blue</item>
         <item name="colorControlHighlight">@color/chub_blue</item>
+    </style>
 
-        <!--<item name="android:actionBarStyle">@style/DialtactsActionBarStyle</item>-->
+    <!-- Base application theme. -->
+    <style name="MapTheme" parent="ChubTheme">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
     <style name="DialtactsActionBarStyle" parent="Widget.AppCompat.ActionBar">
@@ -27,6 +26,20 @@
 
     <!-- Text in the action bar at the top of the screen -->
     <style name="DialtactsActionBarTitleText" parent="RtlOverlay.Widget.AppCompat.ActionBar.TitleItem">
+        <item name="android:textColor">@color/actionbar_text_color</item>
+    </style>
+
+    <style name="ShareActionBarStyle" parent="Widget.AppCompat.ActionBar.Solid">
+        <item name="android:background">@color/chub_blue</item>
+        <item name="android:titleTextStyle">@style/ShareActionBarTitleText</item>
+        <item name="android:height">@dimen/action_bar_height</item>
+        <item name="android:elevation">@dimen/action_bar_elevation</item>
+        <!-- Empty icon -->
+        <item name="android:icon">@android:color/transparent</item>
+    </style>
+
+    <!-- Text in the action bar at the top of the screen -->
+    <style name="ShareActionBarTitleText" parent="RtlOverlay.Widget.AppCompat.ActionBar.TitleItem">
         <item name="android:textColor">@color/actionbar_text_color</item>
     </style>
 
