@@ -57,18 +57,21 @@ public class ApiModule {
     }
 
     @Provides @Singleton @ChubRestAdapter
-    RestAdapter provideGoogleRestAdapter(@ChubRestAdapter Endpoint endpoint, Client client,
-                                         @ChubRestAdapter RequestInterceptor requestInterceptor) {
+    RestAdapter provideChubRestAdapter(@ChubRestAdapter Endpoint endpoint, Client client,
+                                         @ChubRestAdapter RequestInterceptor requestInterceptor,
+                                         @ChubRestAdapter Gson gson) {
         return new RestAdapter.Builder() //
                 .setClient(client) //
                 .setEndpoint(endpoint) //
+                .setConverter(new GsonConverter(gson))//
                 .setLogLevel(RestAdapter.LogLevel.FULL)//
                 .setRequestInterceptor(requestInterceptor)
                 .build();
     }
 
     @Provides @Singleton @GoogleRestAdapter
-    RestAdapter provideChubRestAdapter(@GoogleRestAdapter Endpoint endpoint, Client client, Gson gson) {
+    RestAdapter provideGoogleRestAdapter(@GoogleRestAdapter Endpoint endpoint, Client client,
+                                         @GoogleRestAdapter Gson gson) {
         return new RestAdapter.Builder() //
                 .setClient(client) //
                 .setEndpoint(endpoint) //
@@ -77,11 +80,20 @@ public class ApiModule {
                 .build();
     }
 
-    @Provides @Singleton
-    Gson provideGsonConverter() {
+    @Provides @Singleton @GoogleRestAdapter
+    Gson provideGoogleGsonConverter() {
         return new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapter(Terms.class, new TermsTypeAdapter())
+                .create();
+    }
+
+    @Provides @Singleton @ChubRestAdapter
+    Gson provideChubGsonConverter() {
+        return new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapter(Terms.class, new TermsTypeAdapter())
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                 .create();
     }
 

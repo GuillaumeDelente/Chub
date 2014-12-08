@@ -10,6 +10,7 @@ import android.chub.io.chub.data.api.model.GooglePlace;
 import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.chub.io.chub.data.api.model.GoogleRoute;
 
+import java.util.List;
 import java.util.Map;
 
 import retrofit.http.Body;
@@ -35,4 +36,9 @@ public interface ChubApi {
     @POST("/chubs/{chubId}/locations/") //
     Observable<ChubLocation>
     postLocation(@Path("chubId") long chubId, @Body ChubLocation location);
+
+
+    @POST("/chubs/{chubId}/locations/") //
+    Observable<List<ChubLocation>>
+    postLocation(@Path("chubId") long chubId, @Body List<ChubLocation> locations);
 }

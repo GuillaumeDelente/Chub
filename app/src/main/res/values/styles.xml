@@ -4,6 +4,7 @@
     <style name="ChubTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorAccent">@color/chub_blue</item>
         <item name="colorControlHighlight">@color/chub_blue</item>
+        <item name="android:alertDialogStyle">@style/Dialog</item>
     </style>
 
     <!-- Base application theme. -->
@@ -47,11 +48,18 @@
         <item name="android:textColor">@color/search_result</item>
         <item name="android:textSize">@dimen/search_result1_textsize</item>
         <item name="android:textStyle">bold</item>
-    </style>
+    </style>i
 
     <style name="search_result2">
         <item name="android:textColor">@color/search_result_matched</item>
         <item name="android:textSize">@dimen/search_result2_textsize</item>
+    </style>
+
+    <style name="Dialog" parent="android:Theme.Dialog">
+        <item name="android:background">#FFFFFF</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="android:popupBackground">@null</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 
 </resources>

@@ -34,4 +34,5 @@
     phone_settings_actionbar_text_color-->
     <color name="actionbar_text_color">#ffffff</color>
     <color name="actionbar_unselected_text_color">#a6ffffff</color>
+    <color name="gray">#FF757575</color>
 </resources>

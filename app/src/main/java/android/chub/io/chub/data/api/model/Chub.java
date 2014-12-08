@@ -7,6 +7,7 @@ public class Chub {
 
     public final Destination destination;
     public final long id;
+    public String publicId;
 
     public Chub(Destination destination, long id) {
         this.destination = destination;

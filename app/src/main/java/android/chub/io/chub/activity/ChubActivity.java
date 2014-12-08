@@ -1,5 +1,6 @@
 package android.chub.io.chub.activity;
 
+import android.app.Dialog;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.ApiKey;
@@ -13,8 +14,8 @@ import android.chub.io.chub.data.api.model.GoogleDirectionResponse;
 import android.chub.io.chub.data.api.model.GooglePlace;
 import android.chub.io.chub.data.api.model.GooglePlaceResponse;
 import android.chub.io.chub.data.api.model.GoogleRoute;
-import android.chub.io.chub.data.api.model.RealmRecentChub;
 import android.chub.io.chub.data.api.model.RealmDestination;
+import android.chub.io.chub.data.api.model.RealmRecentChub;
 import android.chub.io.chub.fragment.MapFragment;
 import android.chub.io.chub.fragment.SearchFragment;
 import android.chub.io.chub.service.ChubLocationService;
@@ -24,22 +25,26 @@ import android.chub.io.chub.widget.ActionBarController;
 import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Outline;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
+import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewOutlineProvider;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -65,6 +70,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     public static final String MAP_FRAGMENT = "map_fragment";
     private static final String KEY_SEARCH_QUERY = "search_query";
     private static final String KEY_IN_SEARCH_UI = "in_search_ui";
+    private static final int PICK_CONTACTS = 1010;
     private ActionBarController mActionBarController;
     private EditText mSearchView;
     private SearchEditTextLayout mSearchEditTextLayout;
@@ -136,7 +142,35 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             @Override
             public void onClick(View view) {
                 //createChub();
-                startActivity(new Intent(ChubActivity.this, ShareActivity.class), new Bundle());
+//                startActivity(new Intent(ChubActivity.this, ShareActivity.class), new Bundle());
+//
+
+
+                final Dialog dialog = new Dialog(ChubActivity.this, R.style.Dialog);
+                dialog.setContentView(R.layout.send_chub_dialog);
+                dialog.findViewById(R.id.contacts_view).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //Intent intent = new Intent(ChubActivity.this, com.android.contacts.activities.Sel.class);
+
+                        Intent intent = new Intent(Intent.ACTION_PICK,
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                        startActivityForResult(intent, PICK_CONTACTS);
+                        dialog.dismiss();
+                    }
+                });
+                dialog.findViewById(R.id.share_view).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        dialog.dismiss();
+                    }
+                });
+                WindowManager.LayoutParams wlmp = dialog.getWindow().getAttributes();
+                wlmp.gravity = Gravity.BOTTOM;
+                wlmp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+
+                dialog.show();
             }
         });
         if (savedInstanceState == null) {
@@ -153,7 +187,18 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         }
     }
 
-    private void createChub() {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_CONTACTS) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                createChub(data);
+            }
+        }
+    }
+
+    private void createChub(final Intent data) {
         if (mUserPreferences.getAuthTokenPreference().isSet()) {
             Map body = new HashMap<String, Object>();
             if (mDestination != null) {
@@ -177,6 +222,30 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     Toast.LENGTH_SHORT).show();
                             ChubLocationService.startLocationTracking(getApplicationContext(),
                                     chub.id);
+                            Uri contactUri = data.getData();
+                            // We only need the NUMBER column, because there will be only one row in the result
+                            String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
+
+                            // Perform the query on the contact to get the NUMBER column
+                            // We don't need a selection or sort order (there's only one result for the given URI)
+                            // CAUTION: The query() method should be called from a separate thread to avoid blocking
+                            // your app's UI thread. (For simplicity of the sample, this code doesn't do that.)
+                            // Consider using CursorLoader to perform the query.
+                            Cursor cursor = getContentResolver()
+                                    .query(contactUri, projection, null, null, null);
+                            cursor.moveToFirst();
+
+                            // Retrieve the phone number from the NUMBER column
+                            int column = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                            String number = cursor.getString(column);
+                            /*
+                            SmsManager smsManager = SmsManager.getDefault();
+                            smsManager.sendTextMessage(number, null,
+                                    getString(R.string.chubbed_text_eta,
+                                            Uri.parse("http://chub.io/")
+                                                    .buildUpon().appendPath(chub.publicId)),
+                                    null, null);
+                                    */
                         }
                     });
         } else {

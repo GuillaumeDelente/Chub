@@ -12,5 +12,14 @@
     <string name="you_are_chubing">You are chubing</string>
     <string name="location_shared">Your location is currently being shared.</string>
     <string name="stop">Stop</string>
+    <string name="pick_contacts">Pick contacts</string>
+    <string name="share_link">Share link</string>
+    <string name="choose_how_to_chub">How do you want to chub?</string>
+
+
+    <string name="chubbed_text_eta">I just chubbed you. Check out my ETA on %1$s</string>
+    <string name="chubbed_text_location">I just chubbed you. Check out my location on %1$s</string>
+
+
 
 </resources>

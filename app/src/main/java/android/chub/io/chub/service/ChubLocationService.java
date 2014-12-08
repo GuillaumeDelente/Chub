@@ -9,11 +9,12 @@ import android.chub.io.chub.R;
 import android.chub.io.chub.activity.ChubActivity;
 import android.chub.io.chub.data.api.ChubApi;
 import android.chub.io.chub.data.api.model.ChubLocation;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -24,6 +25,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -45,9 +49,19 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private static final int FASTEST_INTERVAL = 5000;
     private static final String TAG = "ChubLocationService";
     private static final int NOTIFICATION_ID = 1;
+    private static final long LOCATIONS_POST_INTERVALL = 1000 * 10;
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
+    private final Handler mHandler = new Handler();
+    private final Runnable mPostLocationsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            postLocations();
+            mHandler.postDelayed(this, LOCATIONS_POST_INTERVALL);
+        }
+    };
+    private List<ChubLocation> mLocations = new ArrayList<>();
     @Inject
     ChubApi mChubApi;
 
@@ -81,6 +95,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private void handleActionStopTracking() {
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
+        mHandler.removeCallbacks(mPostLocationsRunnable);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_ID);
@@ -96,6 +111,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private void handleActionTrackLocation(long chubId) {
         Log.d(TAG, "Location connection");
         ((ChubApp) getApplication()).inject(this);
+        mLocations.clear();
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -146,22 +162,28 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Location service connected");
+        mHandler.postDelayed(mPostLocationsRunnable, LOCATIONS_POST_INTERVALL);
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
                 mLocationRequest, new LocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
                         Log.d(TAG, "Location changed " + location);
-                        mChubApi.postLocation(mChubId, new ChubLocation(location.getLatitude(),
-                                location.getLongitude())).subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Action1<ChubLocation>() {
-                                    @Override
-                                    public void call(ChubLocation place) {
-
-                                    }
-                                });
+                        mLocations.add(new ChubLocation(location.getLatitude(),
+                                location.getLongitude()));
                     }
                 });
+    }
+
+    private void postLocations() {
+        mChubApi.postLocation(mChubId, new ArrayList<>(mLocations)).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<List<ChubLocation>>() {
+                    @Override
+                    public void call(List<ChubLocation> place) {
+
+                    }
+                });
+        mLocations.clear();
     }
 
     @Override
