@@ -1,78 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_gravity="bottom">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:gravity="start|center_vertical"
-        android:paddingRight="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/choose_how_to_chub"
-        android:textColor="@color/gray"
-        />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="@null"
+             android:gravity="bottom">
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/contacts_view">
+        android:background="@android:color/white"
+        android:layout_gravity="bottom">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="start|top"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="20dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_contacts"
-            />
         <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:gravity="start|center_vertical"
             android:paddingRight="16dp"
-            android:text="@string/pick_contacts"
-            android:textColor="@color/abc_primary_text_material_light"
+            android:layout_marginTop="16dp"
+            android:text="@string/choose_how_to_chub"
+            android:textColor="@color/gray"
             />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/contacts_view">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="start|top"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="20dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_contacts"
+                />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:layout_marginLeft="16dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="start|center_vertical"
+                android:paddingRight="16dp"
+                android:text="@string/pick_contacts"
+                android:textColor="@color/abc_primary_text_material_light"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/share_view">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="start|top"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="20dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_share"
+                />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:layout_marginLeft="16dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="start|center_vertical"
+                android:paddingRight="16dp"
+                android:text="@string/share_link"
+                android:textColor="@color/abc_primary_text_material_light"
+            />
+        </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/share_view">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="start|top"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="20dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_share"
-            />
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="?android:attr/listPreferredItemHeight"
-            android:layout_marginLeft="16dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:gravity="start|center_vertical"
-            android:paddingRight="16dp"
-            android:text="@string/share_link"
-            android:textColor="@color/abc_primary_text_material_light"
-            />
-    </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>

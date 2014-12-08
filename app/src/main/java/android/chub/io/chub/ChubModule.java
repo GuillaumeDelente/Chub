@@ -2,6 +2,7 @@ package android.chub.io.chub;
 
 import android.app.Application;
 import android.chub.io.chub.activity.ChubActivity;
+import android.chub.io.chub.activity.ChubChooserActivity;
 import android.chub.io.chub.activity.ShareActivity;
 import android.chub.io.chub.data.DataModule;
 import android.chub.io.chub.fragment.MapFragment;
@@ -27,6 +28,7 @@ import javax.inject.Singleton;
                 MapFragment.class,
                 SearchFragment.class,
                 ChubLocationService.class,
+                ChubChooserActivity.class,
         }
 )
 

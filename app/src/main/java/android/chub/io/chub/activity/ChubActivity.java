@@ -70,7 +70,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     public static final String MAP_FRAGMENT = "map_fragment";
     private static final String KEY_SEARCH_QUERY = "search_query";
     private static final String KEY_IN_SEARCH_UI = "in_search_ui";
-    private static final int PICK_CONTACTS = 1010;
+    private static final int CHOOSE_HOW_TO_CHUB = 1011;
     private ActionBarController mActionBarController;
     private EditText mSearchView;
     private SearchEditTextLayout mSearchEditTextLayout;
@@ -141,36 +141,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mShareLocationFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //createChub();
-//                startActivity(new Intent(ChubActivity.this, ShareActivity.class), new Bundle());
-//
-
-
-                final Dialog dialog = new Dialog(ChubActivity.this, R.style.Dialog);
-                dialog.setContentView(R.layout.send_chub_dialog);
-                dialog.findViewById(R.id.contacts_view).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //Intent intent = new Intent(ChubActivity.this, com.android.contacts.activities.Sel.class);
-
-                        Intent intent = new Intent(Intent.ACTION_PICK,
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-                        startActivityForResult(intent, PICK_CONTACTS);
-                        dialog.dismiss();
-                    }
-                });
-                dialog.findViewById(R.id.share_view).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        createChub(null);
-                        dialog.dismiss();
-                    }
-                });
-                WindowManager.LayoutParams wlmp = dialog.getWindow().getAttributes();
-                wlmp.gravity = Gravity.BOTTOM;
-                wlmp.width = ViewGroup.LayoutParams.MATCH_PARENT;
-
-                dialog.show();
+                startActivityForResult(new Intent(ChubActivity.this, ChubChooserActivity.class),
+                        CHOOSE_HOW_TO_CHUB);
             }
         });
         if (savedInstanceState == null) {
@@ -190,7 +162,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_CONTACTS) {
+        if (requestCode == CHOOSE_HOW_TO_CHUB) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 createChub(data);
