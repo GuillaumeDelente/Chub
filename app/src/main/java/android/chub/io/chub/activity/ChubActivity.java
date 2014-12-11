@@ -1,6 +1,5 @@
 package android.chub.io.chub.activity;
 
-import android.app.Dialog;
 import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.ApiKey;
@@ -38,11 +37,8 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -55,6 +51,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.chub.android.contacts.activities.ContactSelectionActivity;
+import io.chub.android.contacts.list.ContactPickerFragment;
 import io.realm.Realm;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -70,7 +68,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     public static final String MAP_FRAGMENT = "map_fragment";
     private static final String KEY_SEARCH_QUERY = "search_query";
     private static final String KEY_IN_SEARCH_UI = "in_search_ui";
-    private static final int CHOOSE_HOW_TO_CHUB = 1011;
+    private static final int PICK_CONTACTS = 1010;
     private ActionBarController mActionBarController;
     private EditText mSearchView;
     private SearchEditTextLayout mSearchEditTextLayout;
@@ -141,8 +139,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mShareLocationFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(new Intent(ChubActivity.this, ChubChooserActivity.class),
-                        CHOOSE_HOW_TO_CHUB);
+                startActivityForResult(
+                        new Intent(ChubActivity.this, ContactSelectionActivity.class),
+                        PICK_CONTACTS);
             }
         });
         if (savedInstanceState == null) {
@@ -162,7 +161,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CHOOSE_HOW_TO_CHUB) {
+        if (requestCode == PICK_CONTACTS) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 createChub(data);

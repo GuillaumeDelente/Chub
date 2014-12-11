@@ -105,9 +105,9 @@
                 android:value="android.chub.io.chub.activity.ChubActivity" />
         </activity>
         <activity
-            android:name="android.chub.io.chub.activity.ChubChooserActivity"
-            android:theme="@style/ChubTheme.ChubChooser">
+            android:name="android.chub.io.chub.activity.ChubChooserActivity">
         </activity>
+
         <service
             android:name=".service.ChubLocationService"
             android:exported="false" >
