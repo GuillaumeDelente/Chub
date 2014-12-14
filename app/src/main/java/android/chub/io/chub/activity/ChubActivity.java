@@ -212,8 +212,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 String number = cursor.getString(column);
 
                                 SmsManager smsManager = SmsManager.getDefault();
+                                /*
                                 smsManager.sendTextMessage(number, null, getChubText(chub),
-                                        null, null);
+                                        null, null);*/
                             } else {
                                 Intent sendIntent = new Intent();
                                 sendIntent.setAction(Intent.ACTION_SEND);

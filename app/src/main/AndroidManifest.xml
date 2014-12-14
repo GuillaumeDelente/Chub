@@ -105,7 +105,13 @@
                 android:value="android.chub.io.chub.activity.ChubActivity" />
         </activity>
         <activity
-            android:name="android.chub.io.chub.activity.ChubChooserActivity">
+            android:name="io.chub.android.contacts.activities.ContactSelectionActivity"
+            android:label="@string/launcherActivityLabel"
+            android:theme="@style/ContactPickerTheme"
+            android:launchMode="singleTop"
+            android:clearTaskOnLaunch="true"
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:windowSoftInputMode="adjustResize">
         </activity>
 
         <service
