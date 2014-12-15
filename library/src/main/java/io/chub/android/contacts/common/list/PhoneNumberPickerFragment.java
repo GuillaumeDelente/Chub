@@ -27,6 +27,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.Button;
 
 import io.chub.android.contacts.common.R;
 import io.chub.android.contacts.common.list.ShortcutIntentBuilder.OnShortcutIntentCreatedListener;
@@ -61,6 +63,8 @@ public class PhoneNumberPickerFragment extends ContactEntryListFragment<ContactE
     private boolean mLoaderStarted;
 
     private boolean mUseCallableUri;
+
+    private Button mSendChubButton;
 
     private ContactListItemView.PhotoPosition mPhotoPosition =
             ContactListItemView.getDefaultPhotoPosition(false /* normal/non opposite */);
@@ -106,12 +110,25 @@ public class PhoneNumberPickerFragment extends ContactEntryListFragment<ContactE
         View paddingView = inflater.inflate(R.layout.contact_detail_list_padding, null, false);
         mPaddingView = paddingView.findViewById(R.id.contact_detail_list_padding);
         getListView().addHeaderView(paddingView);
+        getListView().setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
         mAccountFilterHeader = getView().findViewById(R.id.account_filter_header_container);
         mAccountFilterHeader.setOnClickListener(mFilterHeaderClickListener);
         updateFilterHeaderView();
 
         setVisibleScrollbarEnabled(getVisibleScrollbarEnabled());
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mSendChubButton = (Button) view.findViewById(R.id.send_chub);
+        mSendChubButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onPickPhoneNumberAction(((PhoneNumberListAdapter) getAdapter()).getSelectedPhoneNumbers());
+            }
+        });
     }
 
     protected boolean getVisibleScrollbarEnabled() {
@@ -186,7 +203,7 @@ public class PhoneNumberPickerFragment extends ContactEntryListFragment<ContactE
         final Uri phoneUri = getPhoneUri(position);
 
         if (phoneUri != null) {
-            pickPhoneNumber(phoneUri);
+            ((PhoneNumberListAdapter) getAdapter()).onContactSelected(position);
         } else {
             final String number = getPhoneNumber(position);
             if (!TextUtils.isEmpty(number)) {
@@ -268,14 +285,6 @@ public class PhoneNumberPickerFragment extends ContactEntryListFragment<ContactE
         return inflater.inflate(R.layout.contact_list_content, null);
     }
 
-    public void pickPhoneNumber(Uri uri) {
-        if (mShortcutAction == null) {
-            mListener.onPickPhoneNumberAction(uri);
-        } else {
-            startPhoneNumberShortcutIntent(uri);
-        }
-    }
-
     protected void startPhoneNumberShortcutIntent(Uri uri) {
         ShortcutIntentBuilder builder = new ShortcutIntentBuilder(getActivity(), this);
         builder.createPhoneNumberShortcutIntent(uri, mShortcutAction);
@@ -283,11 +292,6 @@ public class PhoneNumberPickerFragment extends ContactEntryListFragment<ContactE
 
     public void onShortcutIntentCreated(Uri uri, Intent shortcutIntent) {
         mListener.onShortcutIntentCreated(shortcutIntent);
-    }
-
-    @Override
-    public void onPickerResult(Intent data) {
-        mListener.onPickPhoneNumberAction(data.getData());
     }
 
     @Override

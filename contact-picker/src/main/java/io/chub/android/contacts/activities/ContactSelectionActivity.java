@@ -56,6 +56,8 @@ import io.chub.android.contacts.list.OnPostalAddressPickerActionListener;
 import io.chub.android.contacts.list.PostalAddressPickerFragment;
 import com.google.common.collect.Sets;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -384,8 +386,8 @@ public class ContactSelectionActivity extends ContactsActivity
     private final class PhoneNumberPickerActionListener implements
             OnPhoneNumberPickerActionListener {
         @Override
-        public void onPickPhoneNumberAction(Uri dataUri) {
-            returnPickerResult(dataUri);
+        public void onPickPhoneNumberAction(ArrayList<String> results) {
+            returnPickerResults(results);
         }
 
         @Override
@@ -490,6 +492,12 @@ public class ContactSelectionActivity extends ContactsActivity
                 showInputMethod(mSearchView.findFocus());
             }
         }
+    }
+
+    public void returnPickerResults(ArrayList<String> results) {
+        Intent intent = new Intent();
+        intent.putStringArrayListExtra("results", results);
+        returnPickerResult(intent);
     }
 
     public void returnPickerResult(Uri data) {

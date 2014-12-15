@@ -19,6 +19,8 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.net.Uri;
 
+import java.util.ArrayList;
+
 /**
  * Action callbacks that can be sent by a phone number picker.
  */
@@ -27,7 +29,7 @@ public interface OnPhoneNumberPickerActionListener  {
     /**
      * Returns the selected phone number to the requester.
      */
-    void onPickPhoneNumberAction(Uri dataUri);
+    void onPickPhoneNumberAction(ArrayList<String> results);
 
     /**
      * Calls the specified phone number audio call.

@@ -2,6 +2,7 @@ package android.chub.io.chub.data.api;
 
 import android.app.Application;
 import android.chub.io.chub.R;
+import android.chub.io.chub.data.api.model.GmtDateTypeAdapter;
 import android.chub.io.chub.data.api.model.Terms;
 import android.chub.io.chub.data.api.model.TermsTypeAdapter;
 import android.chub.io.chub.util.UserPreferences;
@@ -11,6 +12,8 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.OkHttpClient;
+
+import java.util.Date;
 
 import javax.inject.Singleton;
 
@@ -93,7 +96,7 @@ public class ApiModule {
         return new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapter(Terms.class, new TermsTypeAdapter())
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                .registerTypeAdapter(Date.class, new GmtDateTypeAdapter())
                 .create();
     }
 

@@ -58,4 +58,11 @@
             android:visibility="gone" />
     </FrameLayout>
 
+    <Button
+        android:id="@+id/send_chub"
+        android:layout_height="64dp"
+        android:layout_width="match_parent"
+        android:text="Send chub"
+        android:background="@null"/>
+
 </LinearLayout>

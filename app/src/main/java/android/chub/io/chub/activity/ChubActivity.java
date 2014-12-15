@@ -46,6 +46,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.melnykov.fab.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -193,34 +194,16 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     Toast.LENGTH_SHORT).show();
                             ChubLocationService.startLocationTracking(getApplicationContext(),
                                     chub.id);
-                            if (data != null) {
-                                Uri contactUri = data.getData();
-                                // We only need the NUMBER column, because there will be only one row in the result
-                                String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
-
-                                // Perform the query on the contact to get the NUMBER column
-                                // We don't need a selection or sort order (there's only one result for the given URI)
-                                // CAUTION: The query() method should be called from a separate thread to avoid blocking
-                                // your app's UI thread. (For simplicity of the sample, this code doesn't do that.)
-                                // Consider using CursorLoader to perform the query.
-                                Cursor cursor = getContentResolver()
-                                        .query(contactUri, projection, null, null, null);
-                                cursor.moveToFirst();
-
-                                // Retrieve the phone number from the NUMBER column
-                                int column = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                                String number = cursor.getString(column);
+                            if (data != null && data.hasExtra("results")) {
+                                ArrayList<String> numbers = data.getStringArrayListExtra("results");
 
                                 SmsManager smsManager = SmsManager.getDefault();
-                                /*
-                                smsManager.sendTextMessage(number, null, getChubText(chub),
-                                        null, null);*/
+                                for (String number : numbers) {
+                                    smsManager.sendTextMessage(number, null, getChubText(chub),
+                                            null, null);
+                                }
                             } else {
-                                Intent sendIntent = new Intent();
-                                sendIntent.setAction(Intent.ACTION_SEND);
-                                sendIntent.putExtra(Intent.EXTRA_TEXT, getChubText(chub));
-                                sendIntent.setType("text/plain");
-                                startActivity(Intent.createChooser(sendIntent, getChubText(chub)));
+                                //TODO handle error
                             }
                         }
                     });

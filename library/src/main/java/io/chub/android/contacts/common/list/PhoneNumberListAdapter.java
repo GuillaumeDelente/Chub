@@ -34,7 +34,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.chub.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import io.chub.android.contacts.common.GeoUtil;
@@ -110,6 +112,8 @@ public class PhoneNumberListAdapter extends ContactEntryListAdapter {
 
     private boolean mUseCallableUri;
 
+    private Map<Long, String> mSelectedContacts;
+
     public PhoneNumberListAdapter(Context context) {
         super(context);
         setDefaultFilterHeaderText(R.string.list_filter_phones);
@@ -124,10 +128,27 @@ public class PhoneNumberListAdapter extends ContactEntryListAdapter {
             // Empty list to avoid sticky NPE's
             mExtendedDirectories = new ArrayList<DirectoryPartition>();
         }
+        mSelectedContacts = new HashMap<>(5);
     }
 
     protected CharSequence getUnknownNameText() {
         return mUnknownNameText;
+    }
+
+    public void onContactSelected(int position) {
+        final Cursor cursor = (Cursor) getItem(position);
+        cursor.moveToPosition(position);
+        final long selectedContactId = cursor.getLong(PhoneQuery.PHONE_ID);
+        if (mSelectedContacts.containsKey(selectedContactId)) {
+            mSelectedContacts.remove(selectedContactId);
+        } else {
+            mSelectedContacts.put(selectedContactId, getPhoneNumber(position));
+        }
+        notifyDataSetChanged();
+    }
+
+    public ArrayList<String> getSelectedPhoneNumbers() {
+        return new ArrayList<>(mSelectedContacts.values());
     }
 
     @Override
@@ -338,6 +359,7 @@ public class PhoneNumberListAdapter extends ContactEntryListAdapter {
         boolean isFirstEntry = true;
         boolean showBottomDivider = true;
         final long currentContactId = cursor.getLong(PhoneQuery.CONTACT_ID);
+        final long phoneId = cursor.getLong(PhoneQuery.PHONE_ID);
         if (cursor.moveToPrevious() && !cursor.isBeforeFirst()) {
             final long previousContactId = cursor.getLong(PhoneQuery.CONTACT_ID);
             if (currentContactId == previousContactId) {
@@ -375,6 +397,10 @@ public class PhoneNumberListAdapter extends ContactEntryListAdapter {
             unbindName(view);
 
             view.removePhotoView(true, false);
+        }
+
+        if (mSelectedContacts.containsKey(phoneId)) {
+            view.getPhotoView().setImageResource(R.drawable.ic_done_black);
         }
 
         final DirectoryPartition directory = (DirectoryPartition) getPartition(partition);
