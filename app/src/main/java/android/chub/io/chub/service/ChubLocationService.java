@@ -61,7 +61,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             mHandler.postDelayed(this, LOCATIONS_POST_INTERVALL);
         }
     };
-    private List<ChubLocation> mLocations = new ArrayList<>();
+    private final List<ChubLocation> mLocations = new ArrayList<>();
     @Inject
     ChubApi mChubApi;
 
@@ -175,15 +175,28 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     }
 
     private void postLocations() {
-        mChubApi.postLocation(mChubId, new ArrayList<>(mLocations)).subscribeOn(Schedulers.io())
+        final List<ChubLocation> locations = new ArrayList<>(mLocations.size());
+        synchronized (mLocations) {
+            locations.addAll(mLocations);
+            mLocations.clear();
+        }
+        mChubApi.postLocation(mChubId, locations).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<ChubLocation>>() {
-                    @Override
-                    public void call(List<ChubLocation> place) {
+                .subscribe(
+                        new Action1<List<ChubLocation>>() {
+                            @Override
+                            public void call(List<ChubLocation> place) {
 
-                    }
-                });
-        mLocations.clear();
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                //Failed to post locations, re-add failed locations
+                                //to the buffer
+                                mLocations.addAll(locations);
+                            }
+                        });
     }
 
     @Override

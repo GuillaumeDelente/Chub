@@ -44,16 +44,18 @@ public class MapFragment extends BaseFragment {
         mMapView.onCreate(savedInstanceState);
     }
 
-    public LatLng getCurrentLocation() {
+    public Location getCurrentLocation() {
         if (mMap == null)
             return null;
-        Location location = mMap.getMyLocation();
-        return new LatLng(location.getLatitude(), location.getLongitude());
+        return mMap.getMyLocation();
     }
 
     public void displayFlags(LatLng latLng) {
+        Location currentLocation = getCurrentLocation();
+        if (currentLocation == null)
+            return;
         mMap.addMarker(new MarkerOptions()
-                .position(getCurrentLocation())
+                .position(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()))
                 .anchor(0, 1)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_flag)));
 

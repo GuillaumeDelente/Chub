@@ -7,6 +7,7 @@ import android.chub.io.chub.activity.ChubActivity;
 import android.chub.io.chub.adapter.RecentAdapter;
 import android.chub.io.chub.adapter.SearchAdapter;
 import android.chub.io.chub.data.api.ApiKey;
+import android.chub.io.chub.data.api.ErrorAction;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.GoogleAddress;
 import android.chub.io.chub.data.api.model.GoogleAddressResponse;
@@ -21,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -88,12 +90,20 @@ public class SearchFragment extends BaseFragment {
                         return mCurrentQuery.equals(query);
                     }
                 })
-                .subscribe(new Action1<GoogleAddressResponse<GoogleAddress>>() {
-                    @Override
-                    public void call(GoogleAddressResponse<GoogleAddress> googleAddressGoogleResponse) {
-                        mPlacesAdapter.updateItems(googleAddressGoogleResponse.predictions);
-                    }
-                });
+                .subscribe(
+                        new Action1<GoogleAddressResponse<GoogleAddress>>() {
+                            @Override
+                            public void call(GoogleAddressResponse<GoogleAddress> googleAddressGoogleResponse) {
+                                if (!GoogleAddressResponse.OK.equals(googleAddressGoogleResponse.status)) {
+                                    Toast.makeText(getActivity(), getString(R.string.http_error),
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    mPlacesAdapter.updateItems(googleAddressGoogleResponse.predictions);
+                                }
+                            }
+                        },
+                        new ErrorAction(getActivity())
+                );
         mRecyclerView.setAdapter(mPlacesAdapter);
     }
 
@@ -132,4 +142,5 @@ public class SearchFragment extends BaseFragment {
         outState.putString(KEY_LOCATION, mLocation);
         outState.putString(KEY_QUERY, mCurrentQuery);
     }
+
 }

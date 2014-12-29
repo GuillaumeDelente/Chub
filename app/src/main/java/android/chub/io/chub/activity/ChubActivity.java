@@ -4,6 +4,7 @@ import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.R;
 import android.chub.io.chub.data.api.ApiKey;
 import android.chub.io.chub.data.api.ChubApi;
+import android.chub.io.chub.data.api.ErrorAction;
 import android.chub.io.chub.data.api.GeocodingService;
 import android.chub.io.chub.data.api.model.AuthToken;
 import android.chub.io.chub.data.api.model.Chub;
@@ -25,6 +26,7 @@ import android.chub.io.chub.widget.SearchEditTextLayout;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -46,6 +48,8 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.melnykov.fab.FloatingActionButton;
 
+import org.apache.http.HttpStatus;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +59,8 @@ import javax.inject.Inject;
 import io.chub.android.contacts.activities.ContactSelectionActivity;
 import io.chub.android.contacts.list.ContactPickerFragment;
 import io.realm.Realm;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -171,7 +177,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     }
 
     private void createChub(final Intent data) {
-        if (mUserPreferences.getAuthTokenPreference().isSet()) {
             Map body = new HashMap<String, Object>();
             if (mDestination != null) {
                 mRealm.beginTransaction();
@@ -185,13 +190,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 mRealm.commitTransaction();
                 body.put("destination", mDestination);
             }
-            mChubApi.createChub(body).subscribeOn(Schedulers.io())
+            mChubApi.createChub(body)
+                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
+                    .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
                     .subscribe(new Action1<Chub>() {
                         @Override
                         public void call(Chub chub) {
-                            Toast.makeText(ChubActivity.this, "Chub id " + chub.id,
-                                    Toast.LENGTH_SHORT).show();
                             ChubLocationService.startLocationTracking(getApplicationContext(),
                                     chub.id);
                             if (data != null && data.hasExtra("results")) {
@@ -202,21 +207,42 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     smsManager.sendTextMessage(number, null, getChubText(chub),
                                             null, null);
                                 }
+
+                                Toast.makeText(ChubActivity.this, "Chub id " + chub.id,
+                                        Toast.LENGTH_SHORT).show();
                             } else {
-                                //TODO handle error
+                                Toast.makeText(ChubActivity.this, R.string.contacts_error,
+                                        Toast.LENGTH_SHORT).show();
                             }
                         }
-                    });
-        } else {
-            mChubApi.createToken(new HashMap()).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<AuthToken>() {
+                    }, new ErrorAction(ChubActivity.this));
+    }
+
+    private <T> Func1<Throwable,? extends Observable<? extends T>> refreshTokenAndRetry(final Observable<T> toBeResumed) {
+        return new Func1<Throwable, Observable<? extends T>>() {
+            @Override
+            public Observable<? extends T> call(Throwable throwable) {
+                // Here check if the error thrown really is a 401
+                if (!(throwable instanceof RetrofitError))
+                    return Observable.error(throwable);
+                RetrofitError retrofitError = (RetrofitError) throwable;
+                Response response = retrofitError.getResponse();
+                if (RetrofitError.Kind.HTTP.equals(retrofitError.getKind()) &&
+                        response != null &&
+                        (HttpStatus.SC_FORBIDDEN == response.getStatus() ||
+                                HttpStatus.SC_UNAUTHORIZED == response.getStatus())) {
+                    return mChubApi.createToken(new HashMap()).flatMap(new Func1<AuthToken, Observable<? extends T>>() {
                         @Override
-                        public void call(AuthToken authToken) {
-                            mUserPreferences.getAuthTokenPreference().set(authToken.value);
+                        public Observable<? extends T> call(AuthToken token) {
+                            mUserPreferences.getAuthTokenPreference().set(token.value);
+                            return toBeResumed;
                         }
                     });
-        }
+                }
+                // re-throw this error because it's not recoverable from here
+                return Observable.error(throwable);
+            }
+        };
     }
 
     private String getChubText(Chub chub) {
@@ -272,9 +298,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             if (mSearchFragment != null && mSearchFragment.isVisible()) {
                 String location = null;
                 if (mMapFragment != null) {
-                    LatLng position = mMapFragment.getCurrentLocation();
-                    location = String.format("%f,%f", position.latitude,
-                            position.longitude);
+                    Location currentLocation = mMapFragment.getCurrentLocation();
+                    if (currentLocation != null) {
+                        location = String.format("%f,%f", currentLocation.getLatitude(),
+                                currentLocation.getLongitude());
+                    }
                 }
                 mSearchFragment.setQueryString(mSearchQuery, location);
             }
@@ -408,7 +436,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mSearchEditTextLayout.setCollapsedSearchBoxText(address.description);
         mMapFragment.clearMarkers();
         exitSearchUi();
-        final LatLng currentLocation = mMapFragment.getCurrentLocation();
+        final Location currentLocation = mMapFragment.getCurrentLocation();
+        //FIXME : pass current location instead of querying getCurrentLocation so
+        //we can ensure we have a location
+        if (currentLocation == null)
+            return;
         mGeocodingService.getPlaceDetails(address.place_id, mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -426,8 +458,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 destinationLatLng.latitude,
                                 destinationLatLng.longitude);
                         return mGeocodingService.getDirections(
-                                String.format("%f,%f", currentLocation.latitude,
-                                        currentLocation.longitude),
+                                String.format("%f,%f", currentLocation.getLatitude(),
+                                        currentLocation.getLongitude()),
                                 String.format("%f,%f", destinationLatLng.latitude,
                                         destinationLatLng.longitude),
                                 mGoogleApiKey);
@@ -435,12 +467,36 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<GoogleDirectionResponse<GoogleRoute>>() {
-                    @Override
-                    public void call(GoogleDirectionResponse<GoogleRoute> googleRoute) {
-                        mMapFragment.displayRoute(googleRoute.routes.get(0));
-                    }
-                });
+                .subscribe(
+                        new Action1<GoogleDirectionResponse<GoogleRoute>>() {
+                            @Override
+                            public void call(GoogleDirectionResponse<GoogleRoute> googleRoute) {
+                                mMapFragment.displayRoute(googleRoute.routes.get(0));
+                            }
+                        },
+                        new ErrorAction(ChubActivity.this));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!mUserPreferences.getAuthTokenPreference().isSet()) {
+            mChubApi.createToken(new HashMap()).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            new Action1<AuthToken>() {
+                                @Override
+                                public void call(AuthToken authToken) {
+                                    mUserPreferences.getAuthTokenPreference().set(authToken.value);
+                                }
+                            },
+                    new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            //silently fail
+                        }
+                    });
+        }
     }
 
     @Override

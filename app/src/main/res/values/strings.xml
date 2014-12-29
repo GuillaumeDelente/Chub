@@ -16,10 +16,17 @@
     <string name="share_link">Share link</string>
     <string name="choose_how_to_chub">How do you want to chub?</string>
 
-
+    <!-- CHUB TEXT MESSAGES -->
     <string name="chubbed_text_eta">I just chubbed you. Check out my ETA on %1$s</string>
     <string name="chubbed_text_location">I just chubbed you. Check out my location on %1$s</string>
 
+    <!-- ERRORS -->
+    <string name="network_error">Error reaching the server, please retry.</string>
+    <string name="http_error">A server error occured.</string>
+    <string name="conversion_error">Could not understand server response.</string>
+    <string name="unexpected_error">Unexpected error.</string>
+    <string name="unknown_error">Unknown error.</string>
+    <string name="contacts_error">Could not get contacts. Please retry.</string>
 
 
 </resources>

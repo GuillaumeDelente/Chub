@@ -7,9 +7,14 @@ import java.util.List;
  */
 public class GoogleAddressResponse<T> {
 
+    public static final String OK = "OK";
+
     public final List<T> predictions;
 
-    public GoogleAddressResponse(List<T> predictions) {
+    public final String status;
+
+    public GoogleAddressResponse(List<T> predictions, String status) {
         this.predictions = predictions;
+        this.status = status;
     }
 }
