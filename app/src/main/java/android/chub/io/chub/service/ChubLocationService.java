@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -109,7 +110,14 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_ID);
         CURRENT_CHUB_ID = -1;
+        sendLocalBroadcast(false);
         stopSelf();
+    }
+
+    private void sendLocalBroadcast(boolean isTracking) {
+        Intent intent = new Intent(ChubActivity.LOCATION_TRACKING_BROADCAST);
+        intent.putExtra(ChubActivity.TRACKING_LOCATION, isTracking);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
@@ -138,8 +146,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                 .build();
         mLocationRequest = LocationRequest.create();
         // Use high accuracy
-        mLocationRequest.setPriority(
-                LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         // Set the update interval to 5 seconds
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         // Set the fastest update interval to 1 second
@@ -148,6 +155,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mGoogleApiClient.connect();
         displayNotification();
         CURRENT_CHUB_ID = chubId;
+        sendLocalBroadcast(true);
     }
 
     private void displayNotification() {

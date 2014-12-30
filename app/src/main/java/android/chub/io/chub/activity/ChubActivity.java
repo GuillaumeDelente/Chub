@@ -23,7 +23,10 @@ import android.chub.io.chub.util.DialerUtils;
 import android.chub.io.chub.util.UserPreferences;
 import android.chub.io.chub.widget.ActionBarController;
 import android.chub.io.chub.widget.SearchEditTextLayout;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.location.Location;
@@ -33,6 +36,7 @@ import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.text.Editable;
@@ -76,6 +80,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private static final String KEY_SEARCH_QUERY = "search_query";
     private static final String KEY_IN_SEARCH_UI = "in_search_ui";
     private static final int PICK_CONTACTS = 1010;
+    public static final String LOCATION_TRACKING_BROADCAST = "location_tracking_broadcast";
+    public static final String TRACKING_LOCATION = "location_tracking";
     private ActionBarController mActionBarController;
     private EditText mSearchView;
     private SearchEditTextLayout mSearchEditTextLayout;
@@ -88,6 +94,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private MapFragment mMapFragment;
     private FloatingActionButton mShareLocationFab;
     private Destination mDestination;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra(TRACKING_LOCATION)) {
+                setupFloatingActionButton(intent.getBooleanExtra(TRACKING_LOCATION, false));
+            }
+        }
+    };
     @Inject
     GeocodingService mGeocodingService;
     @Inject
@@ -505,7 +519,23 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onResume() {
         super.onResume();
-        if (ChubLocationService.getCurrentChubId() == -1) {
+        setupFloatingActionButton(ChubLocationService.getCurrentChubId() != -1);
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mMessageReceiver, new IntentFilter(LOCATION_TRACKING_BROADCAST));
+    }
+
+    public void setupFloatingActionButton(boolean isTracking) {
+        if (isTracking) {
+            mShareLocationFab.setColorNormalResId(R.color.chub_red);
+            mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
+            mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+            mShareLocationFab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ChubLocationService.stopLocationTracking(ChubActivity.this);
+                }
+            });
+        } else {
             mShareLocationFab.setColorNormalResId(R.color.chub_blue);
             mShareLocationFab.setColorPressedResId(R.color.chub_dark_blue);
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_send);
@@ -517,17 +547,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                             PICK_CONTACTS);
                 }
             });
-        } else {
-            mShareLocationFab.setColorNormalResId(R.color.chub_red);
-            mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
-            mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-            mShareLocationFab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ChubLocationService.stopLocationTracking(ChubActivity.this);
-                }
-            });
         }
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
     }
 
     @Override
