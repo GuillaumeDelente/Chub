@@ -134,23 +134,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             }
         });
         mShareLocationFab = (FloatingActionButton) findViewById(R.id.share_location_fab);
-        /*
-        final int size = getResources().getDimensionPixelSize(R.dimen.fab_size);
-        mShareLocationFab.setOutlineProvider(new ViewOutlineProvider() {
-            @Override
-            public void getOutline(View view, Outline outline) {
-                outline.setOval(0, 0, size, size);
-            }
-        });
-        */
-        mShareLocationFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(
-                        new Intent(ChubActivity.this, ContactSelectionActivity.class),
-                        PICK_CONTACTS);
-            }
-        });
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container,
@@ -517,6 +500,34 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     public int getActionBarHeight() {
         return mActionBarHeight;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ChubLocationService.getCurrentChubId() == -1) {
+            mShareLocationFab.setColorNormalResId(R.color.chub_blue);
+            mShareLocationFab.setColorPressedResId(R.color.chub_dark_blue);
+            mShareLocationFab.setImageResource(android.R.drawable.ic_menu_send);
+            mShareLocationFab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startActivityForResult(
+                            new Intent(ChubActivity.this, ContactSelectionActivity.class),
+                            PICK_CONTACTS);
+                }
+            });
+        } else {
+            mShareLocationFab.setColorNormalResId(R.color.chub_red);
+            mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
+            mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+            mShareLocationFab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ChubLocationService.stopLocationTracking(ChubActivity.this);
+                }
+            });
+        }
     }
 
     @Override

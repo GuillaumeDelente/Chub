@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.chub.io.chub.BuildConfig;
 import android.chub.io.chub.ChubApp;
 import android.chub.io.chub.R;
 import android.chub.io.chub.activity.ChubActivity;
@@ -41,15 +42,17 @@ import rx.schedulers.Schedulers;
  * <p/>
  * helper methods.
  */
-public class ChubLocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private static final String ACTION_TRACK_LOCATION = "android.chub.io.chub.service.action.TRACK_LOCATION";
-    private static final String ACTION_STOP_TRACKING = "android.chub.io.chub.service.action.STOP_TRACKING";
+public class ChubLocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
+    private static final String ACTION_START_TRACKING = "android.chub.io.service.action.TRACK_LOCATION";
+    private static final String ACTION_STOP_TRACKING = "android.chub.io.service.action.STOP_TRACKING";
     private static final String KEY_CHUB_ID = "chub_id";
     private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 5000;
     private static final String TAG = "ChubLocationService";
     private static final int NOTIFICATION_ID = 1;
     private static final long LOCATIONS_POST_INTERVALL = 1000 * 10;
+    private static long CURRENT_CHUB_ID = -1;
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
@@ -61,20 +64,26 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             mHandler.postDelayed(this, LOCATIONS_POST_INTERVALL);
         }
     };
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
     private final List<ChubLocation> mLocations = new ArrayList<>();
     @Inject
     ChubApi mChubApi;
 
-    /**
-     * Starts this service to perform location tracking. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
     public static void startLocationTracking(Context context, long chubId) {
         Intent intent = new Intent(context, ChubLocationService.class);
         intent.putExtra(KEY_CHUB_ID, chubId);
-        intent.setAction(ACTION_TRACK_LOCATION);
+        intent.setAction(ACTION_START_TRACKING);
+        context.startService(intent);
+    }
+
+    public static void stopLocationTracking(Context context) {
+        Intent intent = new Intent(context, ChubLocationService.class);
+        intent.setAction(ACTION_STOP_TRACKING);
         context.startService(intent);
     }
 
@@ -83,7 +92,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         super.onStartCommand(intent, flags, startId);
         if (intent != null) {
             final String action = intent.getAction();
-            if (ACTION_TRACK_LOCATION.equals(action)) {
+            if (ACTION_START_TRACKING.equals(action)) {
                 handleActionTrackLocation(intent.getLongExtra(KEY_CHUB_ID, -1));
             } else if (ACTION_STOP_TRACKING.equals(action)) {
                 handleActionStopTracking();
@@ -99,9 +108,14 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_ID);
-        Context context = getApplicationContext();
-        Intent intent = new Intent(context, ChubLocationService.class);
-        getApplicationContext().stopService(intent);
+        CURRENT_CHUB_ID = -1;
+        stopSelf();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        CURRENT_CHUB_ID = -1;
     }
 
     /**
@@ -109,7 +123,12 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
      * parameters.
      */
     private void handleActionTrackLocation(long chubId) {
-        Log.d(TAG, "Location connection");
+        if (CURRENT_CHUB_ID != -1) {
+            if (BuildConfig.DEBUG)
+                Log.d(TAG, "Could not start service as a Chub is already being shared");
+            stopSelf();
+            return;
+        }
         ((ChubApp) getApplication()).inject(this);
         mLocations.clear();
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
@@ -128,6 +147,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mChubId = chubId;
         mGoogleApiClient.connect();
         displayNotification();
+        CURRENT_CHUB_ID = chubId;
     }
 
     private void displayNotification() {
@@ -205,12 +225,11 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         //TODO handle connection failure by opening resolution activity
+    }
+
+    public static long getCurrentChubId() {
+        return CURRENT_CHUB_ID;
     }
 }

@@ -25,10 +25,7 @@
             android:layout_gravity="bottom|right"
             android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin"
-            android:src="@android:drawable/ic_menu_send"
-            fab:fab_colorNormal="@color/chub_blue"
-            fab:fab_colorPressed="@color/chub_dark_blue"
-            fab:fab_colorRipple="@color/chub_blue" />
+            android:src="@android:drawable/ic_menu_send" />
 
         <FrameLayout
             android:layout_height="match_parent"
