@@ -103,6 +103,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     }
 
     private void handleActionStopTracking() {
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Stop location tracking");
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
         mHandler.removeCallbacks(mPostLocationsRunnable);
@@ -110,6 +112,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_ID);
         CURRENT_CHUB_ID = -1;
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Resetting chub ID to " + CURRENT_CHUB_ID);
         sendLocalBroadcast(false);
         stopSelf();
     }
@@ -123,7 +127,11 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "onDestroy");
         CURRENT_CHUB_ID = -1;
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Resetting chub ID to " + CURRENT_CHUB_ID);
     }
 
     /**
@@ -131,10 +139,11 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
      * parameters.
      */
     private void handleActionTrackLocation(long chubId) {
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Start location tracking");
         if (CURRENT_CHUB_ID != -1) {
             if (BuildConfig.DEBUG)
                 Log.d(TAG, "Could not start service as a Chub is already being shared");
-            stopSelf();
             return;
         }
         ((ChubApp) getApplication()).inject(this);
@@ -155,6 +164,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mGoogleApiClient.connect();
         displayNotification();
         CURRENT_CHUB_ID = chubId;
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Setting current chub ID to " + CURRENT_CHUB_ID);
         sendLocalBroadcast(true);
     }
 
@@ -238,6 +249,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     }
 
     public static long getCurrentChubId() {
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "sending back chub ID " + CURRENT_CHUB_ID);
         return CURRENT_CHUB_ID;
     }
 }

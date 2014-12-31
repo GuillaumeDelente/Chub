@@ -525,6 +525,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     }
 
     public void setupFloatingActionButton(boolean isTracking) {
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Setting floatingActionButton, is tracking " + isTracking);
         if (isTracking) {
             mShareLocationFab.setColorNormalResId(R.color.chub_red);
             mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
