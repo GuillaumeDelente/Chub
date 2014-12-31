@@ -28,11 +28,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -61,7 +59,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.chub.android.contacts.activities.ContactSelectionActivity;
-import io.chub.android.contacts.list.ContactPickerFragment;
 import io.realm.Realm;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -519,7 +516,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onResume() {
         super.onResume();
-        setupFloatingActionButton(ChubLocationService.getCurrentChubId() != -1);
+        setupFloatingActionButton(ChubLocationService.getCurrentlyTrackingChubId() != -1);
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mMessageReceiver, new IntentFilter(LOCATION_TRACKING_BROADCAST));
     }

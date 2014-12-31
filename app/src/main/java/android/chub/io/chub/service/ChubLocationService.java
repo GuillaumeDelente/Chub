@@ -1,6 +1,7 @@
 package android.chub.io.chub.service;
 
 import android.app.IntentService;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -14,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.location.Location;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -58,6 +60,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
     private final Handler mHandler = new Handler();
+    private final IBinder mBinder = new ChubServiceBinder();
     private final Runnable mPostLocationsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -65,10 +68,16 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             mHandler.postDelayed(this, LOCATIONS_POST_INTERVALL);
         }
     };
+    public class ChubServiceBinder extends Binder {
+        public ChubLocationService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return ChubLocationService.this;
+        }
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 
     private final List<ChubLocation> mLocations = new ArrayList<>();
@@ -108,13 +117,11 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
         mHandler.removeCallbacks(mPostLocationsRunnable);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(NOTIFICATION_ID);
         CURRENT_CHUB_ID = -1;
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Resetting chub ID to " + CURRENT_CHUB_ID);
         sendLocalBroadcast(false);
+        stopForeground(true);
         stopSelf();
     }
 
@@ -122,16 +129,6 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         Intent intent = new Intent(ChubActivity.LOCATION_TRACKING_BROADCAST);
         intent.putExtra(ChubActivity.TRACKING_LOCATION, isTracking);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "onDestroy");
-        CURRENT_CHUB_ID = -1;
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Resetting chub ID to " + CURRENT_CHUB_ID);
     }
 
     /**
@@ -162,14 +159,14 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mChubId = chubId;
         mGoogleApiClient.connect();
-        displayNotification();
         CURRENT_CHUB_ID = chubId;
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting current chub ID to " + CURRENT_CHUB_ID);
         sendLocalBroadcast(true);
+        startForeground(NOTIFICATION_ID, buildNotification());
     }
 
-    private void displayNotification() {
+    private Notification buildNotification() {
         Context context = getApplicationContext();
         Intent dismissIntent = new Intent(this, ChubLocationService.class);
         dismissIntent.setAction(ACTION_STOP_TRACKING);
@@ -195,7 +192,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                 .addAction(R.drawable.ic_clear, getString(R.string.stop), stopIntent);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(NOTIFICATION_ID, builder.build());
+        return builder.build();
     }
 
     @Override
@@ -248,7 +245,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         //TODO handle connection failure by opening resolution activity
     }
 
-    public static long getCurrentChubId() {
+    public static long getCurrentlyTrackingChubId() {
         if (BuildConfig.DEBUG)
             Log.d(TAG, "sending back chub ID " + CURRENT_CHUB_ID);
         return CURRENT_CHUB_ID;
