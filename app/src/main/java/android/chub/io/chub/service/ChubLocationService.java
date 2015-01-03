@@ -23,6 +23,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -228,6 +229,9 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                         new Action1<Throwable>() {
                             @Override
                             public void call(Throwable throwable) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Error on postLocation",
+                                        Toast.LENGTH_SHORT).show();
                                 //Failed to post locations, re-add failed locations
                                 //to the buffer
                                 mLocations.addAll(locations);
