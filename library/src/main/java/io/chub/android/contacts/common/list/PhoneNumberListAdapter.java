@@ -137,12 +137,14 @@ public class PhoneNumberListAdapter extends ContactEntryListAdapter {
 
     public void onContactSelected(int position) {
         final Cursor cursor = (Cursor) getItem(position);
-        cursor.moveToPosition(position);
+        if (cursor == null)
+            return;
         final long selectedContactId = cursor.getLong(PhoneQuery.PHONE_ID);
         if (mSelectedContacts.containsKey(selectedContactId)) {
             mSelectedContacts.remove(selectedContactId);
         } else {
-            mSelectedContacts.put(selectedContactId, getPhoneNumber(position));
+            String phoneNumber = cursor.getString(PhoneQuery.PHONE_NUMBER);
+            mSelectedContacts.put(selectedContactId, phoneNumber);
         }
         notifyDataSetChanged();
     }
@@ -281,11 +283,6 @@ public class PhoneNumberListAdapter extends ContactEntryListAdapter {
     @Override
     public String getContactDisplayName(int position) {
         return ((Cursor) getItem(position)).getString(PhoneQuery.DISPLAY_NAME);
-    }
-
-    public String getPhoneNumber(int position) {
-        final Cursor item = (Cursor)getItem(position);
-        return item != null ? item.getString(PhoneQuery.PHONE_NUMBER) : null;
     }
 
     /**

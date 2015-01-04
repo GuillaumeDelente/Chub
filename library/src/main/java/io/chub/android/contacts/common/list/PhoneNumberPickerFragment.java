@@ -29,6 +29,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Button;
+import android.widget.Toast;
 
 import io.chub.android.contacts.common.R;
 import io.chub.android.contacts.common.list.ShortcutIntentBuilder.OnShortcutIntentCreatedListener;
@@ -205,24 +206,13 @@ public class PhoneNumberPickerFragment extends ContactEntryListFragment<ContactE
         if (phoneUri != null) {
             ((PhoneNumberListAdapter) getAdapter()).onContactSelected(position);
         } else {
-            final String number = getPhoneNumber(position);
-            if (!TextUtils.isEmpty(number)) {
-                cacheContactInfo(position);
-                mListener.onCallNumberDirectly(number);
-            } else {
-                Log.w(TAG, "Item at " + position + " was clicked before"
-                        + " adapter is ready. Ignoring");
-            }
+            Toast.makeText(getContext(), R.string.could_not_select_contact, Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 
     protected void cacheContactInfo(int position) {
         // Not implemented. Hook for child classes
-    }
-
-    protected String getPhoneNumber(int position) {
-        final PhoneNumberListAdapter adapter = (PhoneNumberListAdapter) getAdapter();
-        return adapter.getPhoneNumber(position);
     }
 
     protected Uri getPhoneUri(int position) {
