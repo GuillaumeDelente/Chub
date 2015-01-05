@@ -27,6 +27,7 @@
     <string name="unexpected_error">Unexpected error.</string>
     <string name="unknown_error">Unknown error.</string>
     <string name="contacts_error">Could not get contacts. Please retry.</string>
+    <string name="send_chub">SEND CHUB</string>
 
 
 </resources>

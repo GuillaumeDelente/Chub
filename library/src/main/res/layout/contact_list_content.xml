@@ -62,7 +62,10 @@
         android:id="@+id/send_chub"
         android:layout_height="64dp"
         android:layout_width="match_parent"
-        android:text="Send chub"
+        android:text="@string/send_chub"
+        android:gravity="right|center_vertical"
+        android:paddingRight="24dp"
+        android:textColor="@color/actionbar_background_color_dark"
         android:background="@null"/>
 
 </LinearLayout>

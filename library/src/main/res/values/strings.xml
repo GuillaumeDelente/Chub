@@ -740,5 +740,6 @@ a        ren't members of any other group. [CHAR LIMIT=25] -->
          contacts to be displayed. [CHAR LIMIT=128] -->
     <string name="settings_contact_display_options_title">Contact display options</string>
     <string name="could_not_select_contact">Could not select contact. Please retry.</string>
+    <string name="send_chub"><![CDATA[SEND CHUB]]></string>
 
 </resources>
