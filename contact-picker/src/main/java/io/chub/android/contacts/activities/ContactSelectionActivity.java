@@ -65,7 +65,7 @@ import java.util.Set;
  * purposes of selecting one.
  */
 public class ContactSelectionActivity extends ContactsActivity
-        implements View.OnCreateContextMenuListener, OnQueryTextListener, OnClickListener,
+        implements View.OnCreateContextMenuListener, OnQueryTextListener,
                 OnCloseListener, OnFocusChangeListener {
     private static final String TAG = "ContactSelectionActivity";
 
@@ -510,14 +510,6 @@ public class ContactSelectionActivity extends ContactsActivity
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         setResult(RESULT_OK, intent);
         finish();
-    }
-
-    @Override
-    public void onClick(View view) {
-        int i = view.getId();
-        if (i == R.id.floating_action_button) {
-            startCreateNewContactActivity();
-        }
     }
 
     private long getTargetContactId() {
