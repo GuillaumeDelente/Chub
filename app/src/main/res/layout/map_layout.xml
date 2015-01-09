@@ -11,12 +11,77 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/fragment_container"
-        android:clipChildren="false" />
+        android:clipChildren="false"/>
 
     <FrameLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:fitsSystemWindows="true">
+
+        <RelativeLayout
+            android:id="@+id/eta_container"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_gravity="bottom"
+            android:elevation="4dp"
+            android:background="@color/chub_blue">
+
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:orientation="vertical"
+                android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/eta_textview"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:text="4 min"
+                android:paddingLeft="14dp"
+                android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/car_button"
+                    android:layout_height="match_parent"
+                    android:layout_width="@dimen/transport_mode_ic_width"
+                    android:background="@null"
+                    android:src="@drawable/ic_car_selector"
+                    android:gravity="center"/>
+
+                <ImageButton
+                    android:id="@+id/transit_button"
+                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/transport_mode_ic_width"
+                    android:background="@null"
+                    android:src="@drawable/ic_transit_selector"
+                    android:gravity="center"/>
+
+                <ImageButton
+                    android:id="@+id/bike_button"
+                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/transport_mode_ic_width"
+                    android:background="@null"
+                    android:src="@drawable/ic_bike_selector"
+                    android:gravity="center"/>
+
+                <ImageButton
+                    android:id="@+id/walk_button"
+                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/transport_mode_ic_width"
+                    android:background="@null"
+                    android:src="@drawable/ic_walk_selector"/>
+            </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
         <com.melnykov.fab.FloatingActionButton
             android:id="@+id/share_location_fab"
@@ -24,15 +89,15 @@
             android:layout_height="@dimen/fab_size"
             android:layout_gravity="bottom|right"
             android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="@dimen/fab_margin"
-            android:src="@android:drawable/ic_menu_send" />
+            android:layout_marginBottom="68dp"
+            android:src="@android:drawable/ic_menu_send"/>
 
         <FrameLayout
             android:layout_height="match_parent"
             android:layout_width="match_parent"
             android:layout_marginTop="@dimen/search_box_expendend_height"
             android:id="@+id/search_fragment_container"
-            android:clipChildren="false" />
+            android:clipChildren="false"/>
 
         <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
                                            xmlns:app="http://schemas.android.com/apk/res-auto"
