@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="android.chub.io.chub">
+          package="io.chub.android">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -30,7 +30,7 @@
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
 
     <application
-        android:name="android.chub.io.chub.ChubApp"
+        android:name=".ChubApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -88,7 +88,7 @@
         <!--</activity>-->
 
         <activity
-            android:name="android.chub.io.chub.activity.ChubActivity"
+            android:name=".activity.ChubActivity"
             android:label="@string/app_name"
             android:theme="@style/MapTheme">
             <intent-filter>
@@ -99,10 +99,10 @@
         </activity>
 
         <activity
-            android:name="android.chub.io.chub.activity.ShareActivity">
+            android:name=".activity.ShareActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="android.chub.io.chub.activity.ChubActivity" />
+                android:value=".activity.ChubActivity" />
         </activity>
         <activity
             android:name="io.chub.android.contacts.activities.ContactSelectionActivity"
