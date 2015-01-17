@@ -52,6 +52,7 @@
                 android:textColorHint="@color/searchbox_hint_text_color"
                 android:gravity="center_vertical"
                 android:hint="@string/search_box_hint"
+                android:textColorHint="@color/searchbox_hint_text_color"
                 android:lines="1"
                 android:ellipsize="end"/>
 
