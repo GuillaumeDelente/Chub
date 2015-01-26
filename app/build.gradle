@@ -59,5 +59,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:6.5.87'
     compile 'com.google.maps.android:android-maps-utils:0.3.3'
     compile 'com.jakewharton:butterknife:6.0.0'
+    compile 'com.bugsnag:bugsnag-android:3.2.2'
     compile project(':contact-picker')
 }

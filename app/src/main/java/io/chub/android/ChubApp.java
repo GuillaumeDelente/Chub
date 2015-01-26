@@ -2,6 +2,9 @@ package io.chub.android;
 
 import android.app.Application;
 import android.content.Context;
+
+import com.bugsnag.android.Bugsnag;
+
 import dagger.ObjectGraph;
 import timber.log.Timber;
 
@@ -14,12 +17,9 @@ public class ChubApp extends Application {
 
         @Override public void onCreate() {
             super.onCreate();
-
+            Bugsnag.init(this);
             if (BuildConfig.DEBUG) {
                 Timber.plant(new Timber.DebugTree());
-            } else {
-                // TODO Crashlytics.start(this);
-                // TODO Timber.plant(new CrashlyticsTree());
             }
 
             buildObjectGraphAndInject();

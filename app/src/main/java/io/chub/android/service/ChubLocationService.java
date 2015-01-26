@@ -19,6 +19,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.bugsnag.android.Bugsnag;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -253,5 +254,11 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (BuildConfig.DEBUG)
             Log.d(TAG, "sending back chub ID " + CURRENT_CHUB_ID);
         return CURRENT_CHUB_ID;
+    }
+
+    @Override
+    public void onDestroy() {
+        Bugsnag.notify(new Exception("ChubLocationService onDestroy"));
+        super.onDestroy();
     }
 }
