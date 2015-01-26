@@ -19,7 +19,6 @@
         package="io.chub.android.contacts.common">
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <application/>
 </manifest>

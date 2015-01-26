@@ -69,6 +69,7 @@ import io.realm.Realm;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -108,17 +109,61 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @InjectViews({ R.id.car_button, R.id.transit_button, R.id.bike_button, R.id.walk_button })
     List<ImageButton> mTransportationModes;
 
-    static final ButterKnife.Setter<ImageButton, ImageButton> SELECTED = new ButterKnife.Setter<ImageButton, ImageButton>() {
-        @Override public void set(ImageButton view, ImageButton selectedMode, int index) {
-            view.setSelected(view.equals(selectedMode));
-            view.setActivated(view.equals(selectedMode));
-        }
-    };
+    final ButterKnife.Setter<ImageButton, ImageButton> SELECTED =
+            new ButterKnife.Setter<ImageButton, ImageButton>() {
+                @Override public void set(ImageButton view, ImageButton selectedMode, int index) {
+                    if (view.equals(selectedMode)) {
+                        view.setSelected(true);
+                        final HashMap body = new HashMap();
+                        String travelMode = null;
+                        switch (selectedMode.getId()) {
+                            case (R.id.transit_button) :
+                                travelMode = "transit";
+                                break;
+                            case (R.id.bike_button) :
+                                travelMode = "biking";
+                                break;
+                            case (R.id.walk_button) :
+                                travelMode = "walking";
+                                break;
+                            default :
+                            case (R.id.car_button) :
+                                travelMode = "driving";
+                                break;
+                        }
+                        body.put("travel_mode", travelMode);
+                        mChubApi.updateChub(ChubLocationService.getCurrentlyTrackingChubId(), body)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
+                                .subscribe(
+                                        new Subscriber<Chub>() {
+                                            @Override
+                                            public void onCompleted() {
 
-    @OnClick({ R.id.car_button, R.id.transit_button, R.id.bike_button, R.id.walk_button })
-    public void onTransportationModeClick(ImageButton selectedMode) {
-        ButterKnife.apply(mTransportationModes, SELECTED, selectedMode);
-    }
+                                            }
+
+                                            @Override
+                                            public void onError(Throwable e) {
+                                                new ErrorAction(ChubActivity.this).call(e);
+                                            }
+
+                                            @Override
+                                            public void onNext(Chub chub) {
+                                                Toast.makeText(ChubActivity.this,
+                                                        "Updated transportation mode to "
+                                                                + chub.travelMode,
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                    } else {
+                        view.setSelected(false);
+                    }
+                    view.setSelected(view.equals(selectedMode));
+                    view.setActivated(view.equals(selectedMode));
+                }
+            };
+
     @InjectView(R.id.bottom_layout) View mBottomLayout;
     @Inject
     GeocodingService mGeocodingService;
@@ -211,28 +256,39 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
-                    .subscribe(new Action1<Chub>() {
-                        @Override
-                        public void call(Chub chub) {
-                            ChubLocationService.startLocationTracking(getApplicationContext(),
-                                    chub.id);
-                            if (data != null && data.hasExtra("results")) {
-                                ArrayList<String> numbers = data.getStringArrayListExtra("results");
+                    .subscribe(
+                            new Subscriber<Chub>() {
+                                @Override
+                                public void onCompleted() {
 
-                                SmsManager smsManager = SmsManager.getDefault();
-                                for (String number : numbers) {
-                                    smsManager.sendTextMessage(number, null, getChubText(chub),
-                                            null, null);
                                 }
 
-                                Toast.makeText(ChubActivity.this, "Chub id " + chub.id,
-                                        Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(ChubActivity.this, R.string.contacts_error,
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }, new ErrorAction(ChubActivity.this));
+                                @Override
+                                public void onError(Throwable e) {
+                                    new ErrorAction(ChubActivity.this).call(e);
+                                }
+
+                                @Override
+                                public void onNext(Chub chub) {
+                                    ChubLocationService.startLocationTracking(getApplicationContext(),
+                                            chub.id);
+                                    if (data != null && data.hasExtra("results")) {
+                                        ArrayList<String> numbers = data.getStringArrayListExtra("results");
+
+                                        SmsManager smsManager = SmsManager.getDefault();
+                                        for (String number : numbers) {
+                                            smsManager.sendTextMessage(number, null, getChubText(chub),
+                                                    null, null);
+                                        }
+
+                                        Toast.makeText(ChubActivity.this, "Chub id " + chub.id,
+                                                Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(ChubActivity.this, R.string.contacts_error,
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
     }
 
     private <T> Func1<Throwable,? extends Observable<? extends T>> refreshTokenAndRetry(final Observable<T> toBeResumed) {
@@ -329,7 +385,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         public void afterTextChanged(Editable s) {
         }
     };
-
 
 
     /**
@@ -583,5 +638,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     public Toolbar getToolbar() {
         return mToolbar;
+    }
+
+    @OnClick({ R.id.car_button, R.id.transit_button, R.id.bike_button, R.id.walk_button })
+    public void onTransportationModeClick(ImageButton selectedMode) {
+        ButterKnife.apply(mTransportationModes, SELECTED, selectedMode);
     }
 }

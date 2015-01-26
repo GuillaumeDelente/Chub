@@ -37,8 +37,9 @@ import io.chub.android.R;
 import io.chub.android.activity.ChubActivity;
 import io.chub.android.data.api.ChubApi;
 import io.chub.android.data.api.model.ChubLocation;
+import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -70,6 +71,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             mHandler.postDelayed(this, LOCATIONS_POST_INTERVALL);
         }
     };
+    private Subscription mLocationPostSubscription;
+
     public class ChubServiceBinder extends Binder {
         public ChubLocationService getService() {
             // Return this instance of LocalService so clients can call public methods
@@ -218,26 +221,30 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             locations.addAll(mLocations);
             mLocations.clear();
         }
-        mChubApi.postLocation(mChubId, locations).subscribeOn(Schedulers.io())
+        mLocationPostSubscription = mChubApi.postLocation(mChubId, locations)
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        new Action1<List<ChubLocation>>() {
-                            @Override
-                            public void call(List<ChubLocation> place) {
+                .subscribe(new Subscriber<List<ChubLocation>>() {
+                    @Override
+                    public void onCompleted() {
 
-                            }
-                        },
-                        new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Toast.makeText(getApplicationContext(),
-                                        "Error on postLocation",
-                                        Toast.LENGTH_SHORT).show();
-                                //Failed to post locations, re-add failed locations
-                                //to the buffer
-                                mLocations.addAll(locations);
-                            }
-                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getApplicationContext(),
+                                "Error on postLocation",
+                                Toast.LENGTH_SHORT).show();
+                        //Failed to post locations, re-add failed locations
+                        //to the buffer
+                        mLocations.addAll(locations);
+                    }
+
+                    @Override
+                    public void onNext(List<ChubLocation> chubLocations) {
+
+                    }
+                });
     }
 
     @Override
@@ -258,6 +265,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
 
     @Override
     public void onDestroy() {
+        if (mLocationPostSubscription != null)
+            mLocationPostSubscription.unsubscribe();
         Bugsnag.notify(new Exception("ChubLocationService onDestroy"));
         super.onDestroy();
     }

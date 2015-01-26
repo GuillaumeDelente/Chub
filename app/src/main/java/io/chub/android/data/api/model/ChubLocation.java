@@ -1,7 +1,5 @@
 package io.chub.android.data.api.model;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -13,7 +11,6 @@ public class ChubLocation {
 
     public final double latitude;
     public final double longitude;
-    @SerializedName("created_at")
     public final Date createdAt;
 
     public ChubLocation(double latitude, double longitude) {

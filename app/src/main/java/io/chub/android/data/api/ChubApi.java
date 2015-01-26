@@ -7,6 +7,7 @@ import io.chub.android.data.api.model.AuthToken;
 import io.chub.android.data.api.model.Chub;
 import io.chub.android.data.api.model.ChubLocation;
 import retrofit.http.Body;
+import retrofit.http.PATCH;
 import retrofit.http.POST;
 import retrofit.http.Path;
 import rx.Observable;
@@ -23,6 +24,10 @@ public interface ChubApi {
     @POST("/chubs/") //
     Observable<Chub>
     createChub(@Body Map map);
+
+    @PATCH("/chubs/{chubId}/") //
+    Observable<Chub>
+    updateChub(@Path("chubId") long chubId, @Body Map map);
 
     @POST("/chubs/{chubId}/locations/") //
     Observable<ChubLocation>

@@ -8,9 +8,11 @@ public class Chub {
     public final Destination destination;
     public final long id;
     public String publicId;
+    public String travelMode;
 
-    public Chub(Destination destination, long id) {
+    public Chub(Destination destination, long id, String travelMode) {
         this.destination = destination;
         this.id = id;
+        this.travelMode = travelMode;
     }
 }

@@ -17,29 +17,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.chub.android.contacts">
 
-    <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_PROFILE" />
-    <uses-permission android:name="android.permission.WRITE_PROFILE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.NFC" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
-    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
-    <!-- Following used for QuickContacts -->
-    <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
     <activity android:name=".activities.ContactSelectionActivity"
               android:label="@string/launcherActivityLabel"
               android:theme="@style/ContactPickerTheme"
@@ -47,41 +26,6 @@
               android:clearTaskOnLaunch="true"
               android:uiOptions="splitActionBarWhenNarrow"
               android:windowSoftInputMode="adjustResize">
-        <intent-filter>
-            <action android:name="android.intent.action.INSERT_OR_EDIT" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.item/person" />
-            <data android:mimeType="vnd.android.cursor.item/contact" />
-            <data android:mimeType="vnd.android.cursor.item/raw_contact" />
-        </intent-filter>
-
-        <intent-filter>
-            <action android:name="android.intent.action.PICK" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.dir/contact" />
-            <data android:mimeType="vnd.android.cursor.dir/person" />
-            <data android:mimeType="vnd.android.cursor.dir/phone_v2" />
-            <data android:mimeType="vnd.android.cursor.dir/phone" />
-            <data android:mimeType="vnd.android.cursor.dir/postal-address_v2" />
-            <data android:mimeType="vnd.android.cursor.dir/postal-address" />
-            <data android:mimeType="vnd.android.cursor.dir/email_v2" />
-        </intent-filter>
-
-        <intent-filter>
-            <action android:name="android.intent.action.GET_CONTENT" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.item/contact" />
-            <data android:mimeType="vnd.android.cursor.item/person" />
-            <data android:mimeType="vnd.android.cursor.item/phone_v2" />
-            <data android:mimeType="vnd.android.cursor.item/phone" />
-            <data android:mimeType="vnd.android.cursor.item/postal-address_v2" />
-            <data android:mimeType="vnd.android.cursor.item/postal-address" />
-        </intent-filter>
-
-        <intent-filter>
-            <action android:name="com.android.contacts.action.JOIN_CONTACT" />
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent-filter>
     </activity>
     <application/>
 
