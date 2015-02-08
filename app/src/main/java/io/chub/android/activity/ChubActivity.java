@@ -20,6 +20,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -603,6 +604,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting floatingActionButton, is tracking " + isTracking);
         if (isTracking) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             mShareLocationFab.setColorNormalResId(R.color.chub_red);
             mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
@@ -614,6 +616,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             });
             mBottomLayout.setVisibility(View.VISIBLE);
         } else {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             mBottomLayout.setVisibility(View.GONE);
             mShareLocationFab.setColorNormalResId(R.color.chub_blue);
             mShareLocationFab.setColorPressedResId(R.color.chub_dark_blue);

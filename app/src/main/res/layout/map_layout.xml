@@ -90,7 +90,7 @@
             android:layout_height="@dimen/fab_size"
             android:layout_gravity="bottom|right"
             android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="68dp"
+            android:layout_marginBottom="@dimen/fab_margin"
             android:src="@android:drawable/ic_menu_send"/>
 
         <FrameLayout
