@@ -28,5 +28,8 @@
     <string name="unknown_error">Unknown error.</string>
     <string name="contacts_error">Could not get contacts. Please retry.</string>
 
+    <!-- CONTACTS PICKER-->
+    <string name="contactpicker_pick_contacts">Send chub</string>
+
 
 </resources>

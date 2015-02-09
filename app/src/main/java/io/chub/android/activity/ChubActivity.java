@@ -27,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.guillaumedelente.android.contacts.activities.ContactSelectionActivity;
 import com.melnykov.fab.FloatingActionButton;
 
 import org.apache.http.HttpStatus;
@@ -44,7 +45,6 @@ import butterknife.InjectViews;
 import butterknife.OnClick;
 import io.chub.android.BuildConfig;
 import io.chub.android.R;
-import io.chub.android.contacts.activities.ContactSelectionActivity;
 import io.chub.android.data.api.ApiKey;
 import io.chub.android.data.api.ChubApi;
 import io.chub.android.data.api.ErrorAction;

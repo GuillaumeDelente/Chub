@@ -60,7 +60,7 @@ dependencies {
     compile 'com.google.maps.android:android-maps-utils:0.3.3'
     compile 'com.jakewharton:butterknife:6.0.0'
     compile 'com.bugsnag:bugsnag-android:3.2.2'
-    compile ('io.chub.android.contacts:library:1') {
+    compile ('com.guillaumedelente.android.contacts:contact-picker:1') {
         transitive = true
     }
 }
