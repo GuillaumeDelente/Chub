@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "io.chub.android"
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -60,5 +60,7 @@ dependencies {
     compile 'com.google.maps.android:android-maps-utils:0.3.3'
     compile 'com.jakewharton:butterknife:6.0.0'
     compile 'com.bugsnag:bugsnag-android:3.2.2'
-    compile project(':contact-picker')
+    compile ('io.chub.android.contacts:library:1') {
+        transitive = true
+    }
 }
