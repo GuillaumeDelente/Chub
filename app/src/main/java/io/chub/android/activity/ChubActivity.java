@@ -122,7 +122,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 travelMode = "transit";
                                 break;
                             case (R.id.bike_button) :
-                                travelMode = "biking";
+                                travelMode = "bicycling";
                                 break;
                             case (R.id.walk_button) :
                                 travelMode = "walking";
@@ -151,10 +151,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
                                             @Override
                                             public void onNext(Chub chub) {
-                                                Toast.makeText(ChubActivity.this,
-                                                        "Updated transportation mode to "
-                                                                + chub.travelMode,
-                                                        Toast.LENGTH_SHORT).show();
+                                                //update ETA
                                             }
                                         });
                     } else {
