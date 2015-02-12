@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -71,10 +72,13 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import rx.Observable;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.android.events.OnClickEvent;
+import rx.android.observables.ViewObservable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+
+import static rx.android.schedulers.AndroidSchedulers.mainThread;
 
 
 public class ChubActivity extends BaseActivity implements ActionBarController.ActivityUi {
@@ -113,50 +117,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     final ButterKnife.Setter<ImageButton, ImageButton> SELECTED =
             new ButterKnife.Setter<ImageButton, ImageButton>() {
                 @Override public void set(ImageButton view, ImageButton selectedMode, int index) {
-                    if (view.equals(selectedMode)) {
-                        view.setSelected(true);
-                        final HashMap body = new HashMap();
-                        String travelMode = null;
-                        switch (selectedMode.getId()) {
-                            case (R.id.transit_button) :
-                                travelMode = "transit";
-                                break;
-                            case (R.id.bike_button) :
-                                travelMode = "bicycling";
-                                break;
-                            case (R.id.walk_button) :
-                                travelMode = "walking";
-                                break;
-                            default :
-                            case (R.id.car_button) :
-                                travelMode = "driving";
-                                break;
-                        }
-                        body.put("travel_mode", travelMode);
-                        mChubApi.updateChub(ChubLocationService.getCurrentlyTrackingChubId(), body)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
-                                .subscribe(
-                                        new Subscriber<Chub>() {
-                                            @Override
-                                            public void onCompleted() {
-
-                                            }
-
-                                            @Override
-                                            public void onError(Throwable e) {
-                                                new ErrorAction(ChubActivity.this).call(e);
-                                            }
-
-                                            @Override
-                                            public void onNext(Chub chub) {
-                                                //update ETA
-                                            }
-                                        });
-                    } else {
-                        view.setSelected(false);
-                    }
+                    view.setSelected(view.equals(selectedMode));
                     view.setSelected(view.equals(selectedMode));
                     view.setActivated(view.equals(selectedMode));
                 }
@@ -211,6 +172,78 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         });
         mShareLocationFab = (FloatingActionButton) findViewById(R.id.share_location_fab);
         mTransportationModes.get(0).setActivated(true);
+        int transporationModesSize = mTransportationModes.size();
+        ArrayList<Observable> mTransportationModesObservable =
+                new ArrayList<>(transporationModesSize);
+        for (View view : mTransportationModes) {
+            mTransportationModesObservable.add(ViewObservable.clicks(view));
+        }
+        @SuppressWarnings("unchecked")
+        final Observable<OnClickEvent>[] observables =  mTransportationModesObservable
+                .toArray((Observable<OnClickEvent>[]) new Observable[transporationModesSize]);
+        Observable.merge(observables)
+                .throttleLast(1000, TimeUnit.MILLISECONDS, mainThread())
+                .map(new Func1<OnClickEvent, String>() {
+                    @Override
+                    public String call(OnClickEvent onClickEvent) {
+                        View selectedView = onClickEvent.view;
+                        for (View v : mTransportationModes) {
+                            v.setActivated(v.equals(selectedView));
+                        }
+                        String travelMode;
+                        switch (selectedView.getId()) {
+                            case (R.id.transit_button) :
+                                travelMode = "transit";
+                                break;
+                            case (R.id.bike_button) :
+                                travelMode = "bicycling";
+                                break;
+                            case (R.id.walk_button) :
+                                travelMode = "walking";
+                                break;
+                            default :
+                            case (R.id.car_button) :
+                                travelMode = "driving";
+                                break;
+                        }
+                        return travelMode;
+                    }
+                })
+                .observeOn(Schedulers.io())
+                .flatMap(new Func1<String, Observable<Chub>>() {
+                    @Override
+                    public Observable<Chub> call(String travelMode) {
+
+                        final HashMap<String, String> body = new HashMap<>();
+                        body.put("travel_mode", travelMode);
+                        return mChubApi.updateChub(
+                                ChubLocationService.getCurrentlyTrackingChubId(),
+                                body);
+                    }
+                })
+                .observeOn(mainThread())
+                .subscribe(new Subscriber<Chub>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        error.printStackTrace();
+                        Toast.makeText(ChubActivity.this,
+                                "onError",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onNext(Chub event) {
+                        Toast.makeText(ChubActivity.this,
+                                "Transport mode updated to " + event.travelMode,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container,
@@ -252,7 +285,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             }
             mChubApi.createChub(body)
                     .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .observeOn(mainThread())
                     .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
                     .subscribe(
                             new Subscriber<Chub>() {
@@ -513,7 +546,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             return;
         mGeocodingService.getPlaceDetails(address.place_id, mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(mainThread())
                 .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
                         Observable<GoogleDirectionResponse<GoogleRoute>>>() {
                     @Override
@@ -536,7 +569,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     }
                 })
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(mainThread())
                 .subscribe(
                         new Action1<GoogleDirectionResponse<GoogleRoute>>() {
                             @Override
@@ -552,7 +585,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         super.onStart();
         if (!mUserPreferences.getAuthTokenPreference().isSet()) {
             mChubApi.createToken(new HashMap()).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .observeOn(mainThread())
                     .subscribe(
                             new Action1<AuthToken>() {
                                 @Override
