@@ -10,15 +10,9 @@ import rx.functions.Action1;
 /**
 * Created by guillaume on 12/28/14.
 */
-public class ErrorAction implements Action1<Throwable> {
-    private Context mContext;
+public class ErrorHandler {
 
-    public ErrorAction(Context context) {
-        mContext = context;
-    }
-
-    @Override
-    public void call(Throwable throwable) {
+    public static void showError(Context context, Throwable throwable) {
         if (throwable instanceof RetrofitError) {
             int error;
             switch (((RetrofitError) throwable).getKind()) {
@@ -36,11 +30,11 @@ public class ErrorAction implements Action1<Throwable> {
                     error = R.string.unexpected_error;
                     break;
             }
-            Toast.makeText(mContext, mContext.getString(error),
+            Toast.makeText(context, context.getString(error),
                     Toast.LENGTH_SHORT).show();
         } else {
             throwable.printStackTrace();
-            Toast.makeText(mContext, mContext.getString(R.string.unknown_error),
+            Toast.makeText(context, context.getString(R.string.unknown_error),
                     Toast.LENGTH_SHORT).show();
         }
     }

@@ -53,12 +53,14 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private static final String ACTION_START_TRACKING = "android.chub.io.service.action.TRACK_LOCATION";
     private static final String ACTION_STOP_TRACKING = "android.chub.io.service.action.STOP_TRACKING";
     private static final String KEY_CHUB_ID = "chub_id";
+    private static final String KEY_DESTINATION_ID = "destination_id";
     private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 5000;
     private static final String TAG = "ChubLocationService";
     private static final int NOTIFICATION_ID = 1;
     private static final long LOCATIONS_POST_INTERVALL = 1000 * 10;
     private static long CURRENT_CHUB_ID = -1;
+    private static String CURRENT_DESTINATION_ID = null;
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private long mChubId;
@@ -89,9 +91,10 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     @Inject
     ChubApi mChubApi;
 
-    public static void startLocationTracking(Context context, long chubId) {
+    public static void startLocationTracking(Context context, long chubId, String destinationId) {
         Intent intent = new Intent(context, ChubLocationService.class);
         intent.putExtra(KEY_CHUB_ID, chubId);
+        intent.putExtra(KEY_DESTINATION_ID, destinationId);
         intent.setAction(ACTION_START_TRACKING);
         context.startService(intent);
     }
@@ -108,7 +111,9 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_START_TRACKING.equals(action)) {
-                handleActionTrackLocation(intent.getLongExtra(KEY_CHUB_ID, -1));
+                handleActionTrackLocation(
+                        intent.getLongExtra(KEY_CHUB_ID, -1),
+                        intent.getStringExtra(KEY_DESTINATION_ID));
             } else if (ACTION_STOP_TRACKING.equals(action)) {
                 handleActionStopTracking();
             }
@@ -123,6 +128,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             mGoogleApiClient.disconnect();
         mHandler.removeCallbacks(mPostLocationsRunnable);
         CURRENT_CHUB_ID = -1;
+        CURRENT_DESTINATION_ID = null;
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Resetting chub ID to " + CURRENT_CHUB_ID);
         sendLocalBroadcast(false);
@@ -140,7 +146,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionTrackLocation(long chubId) {
+    private void handleActionTrackLocation(long chubId, String destinationId) {
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Start location tracking");
         if (CURRENT_CHUB_ID != -1) {
@@ -165,6 +171,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mChubId = chubId;
         mGoogleApiClient.connect();
         CURRENT_CHUB_ID = chubId;
+        CURRENT_DESTINATION_ID = destinationId;
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting current chub ID to " + CURRENT_CHUB_ID);
         sendLocalBroadcast(true);
@@ -261,6 +268,10 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (BuildConfig.DEBUG)
             Log.d(TAG, "sending back chub ID " + CURRENT_CHUB_ID);
         return CURRENT_CHUB_ID;
+    }
+
+    public static String getCurrentlyDestinationId() {
+        return CURRENT_DESTINATION_ID;
     }
 
     @Override

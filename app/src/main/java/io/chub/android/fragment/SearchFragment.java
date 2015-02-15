@@ -22,7 +22,7 @@ import io.chub.android.activity.ChubActivity;
 import io.chub.android.adapter.RecentAdapter;
 import io.chub.android.adapter.SearchAdapter;
 import io.chub.android.data.api.ApiKey;
-import io.chub.android.data.api.ErrorAction;
+import io.chub.android.data.api.ErrorHandler;
 import io.chub.android.data.api.GeocodingService;
 import io.chub.android.data.api.model.GoogleAddress;
 import io.chub.android.data.api.model.GoogleAddressResponse;
@@ -30,6 +30,7 @@ import io.chub.android.data.api.model.RealmRecentChub;
 import io.chub.android.widget.DividerItemDecoration;
 import io.realm.Realm;
 import io.realm.RealmQuery;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -90,20 +91,27 @@ public class SearchFragment extends BaseFragment {
                         return mCurrentQuery.equals(query);
                     }
                 })
-                .subscribe(
-                        new Action1<GoogleAddressResponse<GoogleAddress>>() {
-                            @Override
-                            public void call(GoogleAddressResponse<GoogleAddress> googleAddressGoogleResponse) {
-                                if (!GoogleAddressResponse.OK.equals(googleAddressGoogleResponse.status)) {
-                                    Toast.makeText(getActivity(), getString(R.string.http_error),
-                                            Toast.LENGTH_SHORT).show();
-                                } else {
-                                    mPlacesAdapter.updateItems(googleAddressGoogleResponse.predictions);
-                                }
-                            }
-                        },
-                        new ErrorAction(getActivity())
-                );
+                .subscribe(new Subscriber<GoogleAddressResponse<GoogleAddress>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        ErrorHandler.showError(getActivity(), e);
+                    }
+
+                    @Override
+                    public void onNext(GoogleAddressResponse<GoogleAddress> result) {
+                        if (!GoogleAddressResponse.OK.equals(result.status)) {
+                            Toast.makeText(getActivity(), getString(R.string.http_error),
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            mPlacesAdapter.updateItems(result.predictions);
+                        }
+                    }
+                });
         mRecyclerView.setAdapter(mPlacesAdapter);
     }
 
