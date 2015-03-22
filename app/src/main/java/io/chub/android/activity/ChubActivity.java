@@ -299,8 +299,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
                                 @Override
                                 public void onNext(Chub chub) {
-                                    ChubLocationService.startLocationTracking(getApplicationContext(),
-                                            chub.id, chub.destination.id);
+                                    ChubLocationService.startLocationTracking(
+                                            getApplicationContext(),
+                                            chub.id,
+                                            chub.destination == null ?
+                                                    null : chub.destination.id);
                                     if (data != null && data.hasExtra("results")) {
                                         ArrayList<String> numbers = data.getStringArrayListExtra("results");
 
@@ -617,7 +620,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting floatingActionButton, is tracking " + isTracking);
         if (isTracking) {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             mShareLocationFab.setColorNormalResId(R.color.chub_red);
             mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
@@ -627,7 +629,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     ChubLocationService.stopLocationTracking(ChubActivity.this);
                 }
             });
-            mBottomLayout.setVisibility(View.VISIBLE);
+            if (!TextUtils.isEmpty(ChubLocationService.getCurrentlyDestinationId())) {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                mBottomLayout.setVisibility(View.VISIBLE);
+            }
         } else {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             mBottomLayout.setVisibility(View.GONE);
