@@ -101,6 +101,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private SearchFragment mSearchFragment;
     private MapFragment mMapFragment;
     private FloatingActionButton mShareLocationFab;
+    private LatLng mDestinationLatLng;
     private Destination mDestination;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
@@ -188,17 +189,17 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     public String call(OnClickEvent onClickEvent) {
                         String travelMode;
                         switch (onClickEvent.view.getId()) {
-                            case (R.id.transit_button) :
+                            case (R.id.transit_button):
                                 travelMode = "transit";
                                 break;
-                            case (R.id.bike_button) :
+                            case (R.id.bike_button):
                                 travelMode = "bicycling";
                                 break;
-                            case (R.id.walk_button) :
+                            case (R.id.walk_button):
                                 travelMode = "walking";
                                 break;
-                            default :
-                            case (R.id.car_button) :
+                            default:
+                            case (R.id.car_button):
                                 travelMode = "driving";
                                 break;
                         }
@@ -213,14 +214,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         final HashMap<String, String> body = new HashMap<>();
                         body.put("travel_mode", travelMode);
                         return mChubApi.updateChub(
-                                ChubLocationService.getCurrentlyTrackingChubId(),
+                                ChubLocationService.getChubId(),
                                 body);
                     }
                 })
                 .flatMap(new Func1<Chub, Observable<GoogleDirectionResponse<GoogleRoute>>>() {
                     @Override
                     public Observable<GoogleDirectionResponse<GoogleRoute>> call(Chub chub) {
-                        return getRouteObservable(ChubLocationService.getCurrentlyDestinationId(),
+                        return getRouteObservable(ChubLocationService.getDestinationLatLng(),
                                 new Location(""));
                     }
                 })
@@ -269,7 +270,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
     private void createChub(final Intent data) {
             Map body = new HashMap<String, Object>();
-            if (mDestination != null) {
+            if (mDestinationLatLng != null) {
                 mRealm.beginTransaction();
                 RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
                 RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
@@ -302,8 +303,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     ChubLocationService.startLocationTracking(
                                             getApplicationContext(),
                                             chub.id,
-                                            chub.destination == null ?
-                                                    null : chub.destination.id);
+                                            mDestinationLatLng);
                                     if (data != null && data.hasExtra("results")) {
                                         ArrayList<String> numbers = data.getStringArrayListExtra("results");
 
@@ -545,9 +545,26 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         //we can ensure we have a location
         if (currentLocation == null)
             return;
-        getRouteObservable(address.place_id, currentLocation)
+        getGooglePlace(address.place_id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(mainThread())
+                .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
+                        Observable<GoogleDirectionResponse<GoogleRoute>>>() {
+                    @Override
+                    public Observable<GoogleDirectionResponse<GoogleRoute>>
+                    call(GooglePlaceResponse<GooglePlace> googlePlaceGooglePlaceResponse) {
+                        mDestinationLatLng =
+                                new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
+                                        googlePlaceGooglePlaceResponse.result.geometry.location.lng);
+                        mMapFragment.displayFlags(mDestinationLatLng);
+                        mDestination = new Destination(
+                                googlePlaceGooglePlaceResponse.result.id,
+                                googlePlaceGooglePlaceResponse.result.name,
+                                mDestinationLatLng.latitude,
+                                mDestinationLatLng.longitude);
+                        return getRouteObservable(mDestinationLatLng, currentLocation);
+                    }
+                })
                 .subscribe(new Subscriber<GoogleDirectionResponse<GoogleRoute>>() {
                     @Override
                     public void onCompleted() {
@@ -611,7 +628,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onResume() {
         super.onResume();
-        setupUi(ChubLocationService.getCurrentlyTrackingChubId() != -1);
+        setupUi(ChubLocationService.getChubId() != -1);
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mMessageReceiver, new IntentFilter(LOCATION_TRACKING_BROADCAST));
     }
@@ -629,7 +646,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     ChubLocationService.stopLocationTracking(ChubActivity.this);
                 }
             });
-            if (!TextUtils.isEmpty(ChubLocationService.getCurrentlyDestinationId())) {
+            if (ChubLocationService.getDestinationLatLng() != null) {
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
                 mBottomLayout.setVisibility(View.VISIBLE);
             }
@@ -661,30 +678,19 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         return mToolbar;
     }
 
-    private Observable<GoogleDirectionResponse<GoogleRoute>> getRouteObservable(String placeId, final Location location) {
-        return mGeocodingService.getPlaceDetails(placeId, mGoogleApiKey)
+    private Observable<GoogleDirectionResponse<GoogleRoute>> getRouteObservable(LatLng destination,
+                                                                                final Location location) {
+        return mGeocodingService.getDirections(
+                String.format("%f,%f", location.getLatitude(),
+                        location.getLongitude()),
+                String.format("%f,%f", destination.latitude,
+                        destination.longitude),
+                mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
-                .observeOn(mainThread())
-                .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
-                        Observable<GoogleDirectionResponse<GoogleRoute>>>() {
-                    @Override
-                    public Observable<GoogleDirectionResponse<GoogleRoute>>
-                    call(GooglePlaceResponse<GooglePlace> googlePlaceGooglePlaceResponse) {
-                        LatLng destinationLatLng = new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
-                                googlePlaceGooglePlaceResponse.result.geometry.location.lng);
-                        mMapFragment.displayFlags(destinationLatLng);
-                        mDestination = new Destination(
-                                googlePlaceGooglePlaceResponse.result.id,
-                                googlePlaceGooglePlaceResponse.result.name,
-                                destinationLatLng.latitude,
-                                destinationLatLng.longitude);
-                        return mGeocodingService.getDirections(
-                                String.format("%f,%f", location.getLatitude(),
-                                        location.getLongitude()),
-                                String.format("%f,%f", destinationLatLng.latitude,
-                                        destinationLatLng.longitude),
-                                mGoogleApiKey);
-                    }
-                });
+                .observeOn(mainThread());
+    }
+
+    private Observable<GooglePlaceResponse<GooglePlace>> getGooglePlace(String placeId) {
+        return mGeocodingService.getPlaceDetails(placeId, mGoogleApiKey);
     }
 }
