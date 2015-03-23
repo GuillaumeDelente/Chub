@@ -67,6 +67,7 @@ import io.chub.android.util.UserPreferences;
 import io.chub.android.widget.ActionBarController;
 import io.chub.android.widget.SearchEditTextLayout;
 import io.realm.Realm;
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import rx.Observable;
@@ -75,6 +76,7 @@ import rx.android.events.OnClickEvent;
 import rx.android.observables.ViewObservable;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
@@ -103,6 +105,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private FloatingActionButton mShareLocationFab;
     private LatLng mDestinationLatLng;
     private Destination mDestination;
+    private ReactiveLocationProvider mLocationProvider;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -162,6 +165,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             }
         });
         mShareLocationFab = (FloatingActionButton) findViewById(R.id.share_location_fab);
+        mLocationProvider = new ReactiveLocationProvider(this);
         mTransportationModes.get(0).setActivated(true);
         int transporationModesSize = mTransportationModes.size();
         ArrayList<Observable> mTransportationModesObservable =
@@ -210,7 +214,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 .flatMap(new Func1<String, Observable<Chub>>() {
                     @Override
                     public Observable<Chub> call(String travelMode) {
-
                         final HashMap<String, String> body = new HashMap<>();
                         body.put("travel_mode", travelMode);
                         return mChubApi.updateChub(
@@ -218,18 +221,28 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 body);
                     }
                 })
-                .flatMap(new Func1<Chub, Observable<GoogleDirectionResponse<GoogleRoute>>>() {
+                .zipWith(mLocationProvider.getLastKnownLocation(),
+                        new Func2<Chub, Location, Observable<GoogleDirectionResponse<GoogleRoute>>>() {
                     @Override
-                    public Observable<GoogleDirectionResponse<GoogleRoute>> call(Chub chub) {
+                    public Observable<GoogleDirectionResponse<GoogleRoute>> call(Chub chub, Location location) {
                         return getRouteObservable(ChubLocationService.getDestinationLatLng(),
-                                new Location(""));
+                                location,
+                                chub.travelMode);
                     }
                 })
                 .observeOn(mainThread())
+                .flatMap(new Func1<Observable<GoogleDirectionResponse<GoogleRoute>>,
+                        Observable<GoogleDirectionResponse<GoogleRoute>>>() {
+                    @Override
+                    public Observable<GoogleDirectionResponse<GoogleRoute>>
+                    call(Observable<GoogleDirectionResponse<GoogleRoute>> googleDirectionResponseObservable) {
+                        return googleDirectionResponseObservable;
+                    }
+                })
                 .subscribe(new Subscriber<GoogleDirectionResponse<GoogleRoute>>() {
                     @Override
                     public void onCompleted() {
-
+                        ErrorHandler.showError(ChubActivity.this, new Exception("onComplete"));
                     }
 
                     @Override
@@ -562,7 +575,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 googlePlaceGooglePlaceResponse.result.name,
                                 mDestinationLatLng.latitude,
                                 mDestinationLatLng.longitude);
-                        return getRouteObservable(mDestinationLatLng, currentLocation);
+                        return getRouteObservable(mDestinationLatLng, currentLocation, "driving");
                     }
                 })
                 .subscribe(new Subscriber<GoogleDirectionResponse<GoogleRoute>>() {
@@ -679,12 +692,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     }
 
     private Observable<GoogleDirectionResponse<GoogleRoute>> getRouteObservable(LatLng destination,
-                                                                                final Location location) {
+                                                                                final Location location,
+                                                                                String travelMode) {
         return mGeocodingService.getDirections(
                 String.format("%f,%f", location.getLatitude(),
                         location.getLongitude()),
                 String.format("%f,%f", destination.latitude,
                         destination.longitude),
+                travelMode,
                 mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
                 .observeOn(mainThread());

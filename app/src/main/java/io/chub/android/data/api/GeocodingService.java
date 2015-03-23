@@ -36,5 +36,6 @@ public interface GeocodingService  {
     Observable<GoogleDirectionResponse<GoogleRoute>>
     getDirections(@Query("origin") String origin,//
                @Query("destination") String destination,//
+               @Query("mode") String travelMode,//
                @Query("key") String apiKey);
 }
