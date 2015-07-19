@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import io.chub.android.BuildConfig;
 import io.chub.android.animation.AnimUtils;
 
@@ -215,10 +213,5 @@ public class ActionBarController {
      */
     public void restoreActionBarOffset() {
         slideActionBar(mIsActionBarSlidUp /* slideUp */, false /* animate */);
-    }
-
-    @VisibleForTesting
-    public boolean getIsActionBarSlidUp() {
-        return mIsActionBarSlidUp;
     }
 }
