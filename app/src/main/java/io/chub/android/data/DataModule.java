@@ -1,7 +1,6 @@
 package io.chub.android.data;
 
 import android.app.Application;
-import com.squareup.okhttp.OkHttpClient;
 
 import javax.inject.Singleton;
 
@@ -23,12 +22,6 @@ import io.realm.Realm;
         library = true
 )
 public class DataModule {
-
-    @Provides
-    @Singleton
-    OkHttpClient provideOkHttpClient(Application app) {
-        return new OkHttpClient();
-    }
 
     @Provides
     @Singleton

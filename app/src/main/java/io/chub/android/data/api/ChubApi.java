@@ -17,24 +17,24 @@ import rx.Observable;
  */
 public interface ChubApi {
 
-    @POST("/authTokens/") //
+    @POST("authTokens/") //
     Observable<AuthToken>
     createToken(@Body Map map);
 
-    @POST("/chubs/") //
+    @POST("chubs/") //
     Observable<Chub>
     createChub(@Body Map map);
 
-    @PATCH("/chubs/{chubId}/") //
+    @PATCH("chubs/{chubId}/") //
     Observable<Chub>
     updateChub(@Path("chubId") long chubId, @Body Map map);
 
-    @POST("/chubs/{chubId}/locations/") //
+    @POST("chubs/{chubId}/locations/") //
     Observable<ChubLocation>
     postLocation(@Path("chubId") long chubId, @Body ChubLocation location);
 
 
-    @POST("/chubs/{chubId}/locations/") //
+    @POST("chubs/{chubId}/locations/") //
     Observable<List<ChubLocation>>
     postLocation(@Path("chubId") long chubId, @Body List<ChubLocation> locations);
 }

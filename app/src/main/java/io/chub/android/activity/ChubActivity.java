@@ -68,8 +68,7 @@ import io.chub.android.widget.ActionBarController;
 import io.chub.android.widget.SearchEditTextLayout;
 import io.realm.Realm;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit.HttpException;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.events.OnClickEvent;
@@ -341,14 +340,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             @Override
             public Observable<? extends T> call(Throwable throwable) {
                 // Here check if the error thrown really is a 401
-                if (!(throwable instanceof RetrofitError))
+                if (!(throwable instanceof HttpException))
                     return Observable.error(throwable);
-                RetrofitError retrofitError = (RetrofitError) throwable;
-                Response response = retrofitError.getResponse();
-                if (RetrofitError.Kind.HTTP.equals(retrofitError.getKind()) &&
-                        response != null &&
-                        (HttpStatus.SC_FORBIDDEN == response.getStatus() ||
-                                HttpStatus.SC_UNAUTHORIZED == response.getStatus())) {
+                final int httpResponse = ((HttpException) throwable).code();
+                if (HttpStatus.SC_FORBIDDEN == httpResponse ||
+                                HttpStatus.SC_UNAUTHORIZED == httpResponse) {
                     return mChubApi.createToken(new HashMap()).flatMap(new Func1<AuthToken, Observable<? extends T>>() {
                         @Override
                         public Observable<? extends T> call(AuthToken token) {

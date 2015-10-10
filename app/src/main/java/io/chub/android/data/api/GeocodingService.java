@@ -21,18 +21,18 @@ public interface GeocodingService  {
     Observable<GoogleResponse<GoogleAddress>>
     getAddress(@Query("latlng") String latLng);*/
 
-    @GET("/place/autocomplete/json?radius=1000") //
+    @GET("place/autocomplete/json?radius=1000") //
     Observable<GoogleAddressResponse<GoogleAddress>>
     getAddress(@Query("input") String input,//
                @Query("location") String location,//
                @Query("key") String apiKey);
 
-    @GET("/place/details/json") //
+    @GET("place/details/json") //
     Observable<GooglePlaceResponse<GooglePlace>>
     getPlaceDetails(@Query("placeid") String placeId,//
                @Query("key") String apiKey);
 
-    @GET("/directions/json") //
+    @GET("directions/json") //
     Observable<GoogleDirectionResponse<GoogleRoute>>
     getDirections(@Query("origin") String origin,//
                @Query("destination") String destination,//
