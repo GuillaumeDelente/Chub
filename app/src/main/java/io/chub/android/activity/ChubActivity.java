@@ -57,6 +57,7 @@ import io.chub.android.data.api.model.GoogleDirectionResponse;
 import io.chub.android.data.api.model.GooglePlace;
 import io.chub.android.data.api.model.GooglePlaceResponse;
 import io.chub.android.data.api.model.GoogleRoute;
+import io.chub.android.data.api.model.RealmContact;
 import io.chub.android.data.api.model.RealmDestination;
 import io.chub.android.data.api.model.RealmRecentChub;
 import io.chub.android.fragment.MapFragment;
@@ -113,10 +114,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             }
         }
     };
-    @InjectViews({ R.id.car_button, R.id.transit_button, R.id.bike_button, R.id.walk_button })
+    @InjectViews({R.id.car_button, R.id.transit_button, R.id.bike_button, R.id.walk_button})
     List<ImageButton> mTransportationModes;
 
-    @InjectView(R.id.bottom_layout) View mBottomLayout;
+    @InjectView(R.id.bottom_layout)
+    View mBottomLayout;
     @Inject
     GeocodingService mGeocodingService;
     @Inject
@@ -173,7 +175,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             mTransportationModesObservable.add(ViewObservable.clicks(view));
         }
         @SuppressWarnings("unchecked")
-        final Observable<OnClickEvent>[] observables =  mTransportationModesObservable
+        final Observable<OnClickEvent>[] observables = mTransportationModesObservable
                 .toArray((Observable<OnClickEvent>[]) new Observable[transporationModesSize]);
         Observable.merge(observables)
                 .map(new Func1<OnClickEvent, OnClickEvent>() {
@@ -216,19 +218,20 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         final HashMap<String, String> body = new HashMap<>();
                         body.put("travel_mode", travelMode);
                         return mChubApi.updateChub(
-                                ChubLocationService.getChubId(),
-                                body);
+                                ChubLocationService.getChubId(), body)
+                                .onErrorResumeNext(Observable.<Chub>empty());
                     }
                 })
                 .zipWith(mLocationProvider.getLastKnownLocation(),
                         new Func2<Chub, Location, Observable<GoogleDirectionResponse<GoogleRoute>>>() {
-                    @Override
-                    public Observable<GoogleDirectionResponse<GoogleRoute>> call(Chub chub, Location location) {
-                        return getRouteObservable(ChubLocationService.getDestinationLatLng(),
-                                location,
-                                chub.travelMode);
-                    }
-                })
+                            @Override
+                            public Observable<GoogleDirectionResponse<GoogleRoute>> call(Chub chub, Location location) {
+                                return getRouteObservable(ChubLocationService.getDestinationLatLng(),
+                                        location,
+                                        chub.travelMode)
+                                        .onErrorResumeNext(Observable.<GoogleDirectionResponse<GoogleRoute>>empty());
+                            }
+                        })
                 .observeOn(mainThread())
                 .flatMap(new Func1<Observable<GoogleDirectionResponse<GoogleRoute>>,
                         Observable<GoogleDirectionResponse<GoogleRoute>>>() {
@@ -281,61 +284,74 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     }
 
     private void createChub(final Intent data) {
-            Map body = new HashMap<String, Object>();
-            if (mDestinationLatLng != null) {
-                mRealm.beginTransaction();
-                RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
-                RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
-                realmDestination.setName(mDestination.name);
-                realmDestination.setLatitude(mDestination.latitude);
-                realmDestination.setLongitude(mDestination.longitude);
-                realmDestination.setPlaceId(mDestination.id);
-                lastChub.setDestination(realmDestination);
-                mRealm.commitTransaction();
-                body.put("destination", mDestination);
+        final ArrayList<String> numbers = new ArrayList<>();
+        final ArrayList<String> names = new ArrayList<>();
+        if (data != null && data.hasExtra(ContactSelectionActivity.KEY_RESULT_NUMBERS)) {
+            numbers.addAll(data.getStringArrayListExtra(ContactSelectionActivity.KEY_RESULT_NUMBERS));
+            names.addAll(data.getStringArrayListExtra(ContactSelectionActivity.KEY_RESULT_NAMES));
+        } else {
+            Toast.makeText(ChubActivity.this, R.string.contacts_error,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Map body = new HashMap<>();
+        if (mDestinationLatLng != null) {
+            mRealm.beginTransaction();
+            RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
+            RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
+            realmDestination.setName(mDestination.name);
+            realmDestination.setLatitude(mDestination.latitude);
+            realmDestination.setLongitude(mDestination.longitude);
+            realmDestination.setPlaceId(mDestination.id);
+            lastChub.setDestination(realmDestination);
+            for (int i = 0; i < numbers.size(); i ++) {
+                RealmContact realmContact = mRealm.createObject(RealmContact.class);
+                realmContact.setNumber(numbers.get(i));
+                realmContact.setName(names.get(i));
+                lastChub.getContacts().add(realmContact);
             }
-            mChubApi.createChub(body)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(mainThread())
-                    .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
-                    .subscribe(
-                            new Subscriber<Chub>() {
-                                @Override
-                                public void onCompleted() {
+            mRealm.commitTransaction();
+            body.put("destination", mDestination);
+        }
+        mChubApi.createChub(body)
+                .subscribeOn(Schedulers.io())
+                .observeOn(mainThread())
+                .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
+                .subscribe(
+                        new Subscriber<Chub>() {
+                            @Override
+                            public void onCompleted() {
 
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                ErrorHandler.showError(ChubActivity.this, e);
+                                if (BuildConfig.DEBUG) {
+                                    e.printStackTrace();
+                                    Log.e(TAG, "Error while creating the chub");
                                 }
+                            }
 
-                                @Override
-                                public void onError(Throwable e) {
-                                    ErrorHandler.showError(ChubActivity.this, e);
-                                }
-
-                                @Override
-                                public void onNext(Chub chub) {
-                                    ChubLocationService.startLocationTracking(
-                                            getApplicationContext(),
-                                            chub.id,
-                                            mDestinationLatLng);
-                                    if (data != null && data.hasExtra("results")) {
-                                        ArrayList<String> numbers = data.getStringArrayListExtra("results");
-
-                                        SmsManager smsManager = SmsManager.getDefault();
-                                        for (String number : numbers) {
-                                            smsManager.sendTextMessage(number, null, getChubText(chub),
-                                                    null, null);
-                                        }
-
-                                        Toast.makeText(ChubActivity.this, "Chub id " + chub.id,
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(ChubActivity.this, R.string.contacts_error,
-                                                Toast.LENGTH_SHORT).show();
+                            @Override
+                            public void onNext(Chub chub) {
+                                ChubLocationService.startLocationTracking(
+                                        getApplicationContext(),
+                                        chub.id,
+                                        mDestinationLatLng);
+                                SmsManager smsManager = SmsManager.getDefault();
+                                for (String number : numbers) {
+                                    if (BuildConfig.DEBUG) {
+                                        Log.e(TAG, "Getting number : " + number);
                                     }
+                                    smsManager.sendTextMessage(number, null, getChubText(chub),
+                                            null, null);
                                 }
-                            });
+                            }
+                        });
     }
 
-    private <T> Func1<Throwable,? extends Observable<? extends T>> refreshTokenAndRetry(final Observable<T> toBeResumed) {
+    private <T> Func1<Throwable, ? extends Observable<? extends T>> refreshTokenAndRetry(final Observable<T> toBeResumed) {
         return new Func1<Throwable, Observable<? extends T>>() {
             @Override
             public Observable<? extends T> call(Throwable throwable) {
@@ -344,7 +360,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     return Observable.error(throwable);
                 final int httpResponse = ((HttpException) throwable).code();
                 if (HttpStatus.SC_FORBIDDEN == httpResponse ||
-                                HttpStatus.SC_UNAUTHORIZED == httpResponse) {
+                        HttpStatus.SC_UNAUTHORIZED == httpResponse) {
                     return mChubApi.createToken(new HashMap()).flatMap(new Func1<AuthToken, Observable<? extends T>>() {
                         @Override
                         public Observable<? extends T> call(AuthToken token) {
@@ -605,12 +621,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                     mUserPreferences.getAuthTokenPreference().set(authToken.value);
                                 }
                             },
-                    new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            //silently fail
-                        }
-                    });
+                            new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    //silently fail
+                                }
+                            });
         }
     }
 

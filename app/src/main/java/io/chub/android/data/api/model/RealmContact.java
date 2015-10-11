@@ -5,9 +5,10 @@ import io.realm.RealmObject;
 /**
  * Created by guillaume on 11/25/14.
  */
-public class RealmContacts extends RealmObject {
+public class RealmContact extends RealmObject {
 
     private String name;
+    private String number;
 
     public String getName() {
         return name;
@@ -15,5 +16,13 @@ public class RealmContacts extends RealmObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
     }
 }

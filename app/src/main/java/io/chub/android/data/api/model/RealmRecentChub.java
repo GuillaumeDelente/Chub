@@ -8,14 +8,14 @@ import io.realm.RealmObject;
  */
 public class RealmRecentChub extends RealmObject {
 
-    private RealmList<RealmContacts> contacts;
+    private RealmList<RealmContact> contacts;
     private RealmDestination destination;
 
-    public RealmList<RealmContacts> getContacts() {
+    public RealmList<RealmContact> getContacts() {
         return this.contacts;
     }
 
-    public void setContacts(RealmList<RealmContacts> contacts) {
+    public void setContacts(RealmList<RealmContact> contacts) {
         this.contacts = contacts;
     }
 

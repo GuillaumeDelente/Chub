@@ -9,8 +9,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import io.chub.android.R;
 import io.chub.android.data.api.model.GoogleAddress;
+import io.chub.android.data.api.model.RealmContact;
 import io.chub.android.data.api.model.RealmRecentChub;
 import io.realm.RealmResults;
 
@@ -65,7 +71,12 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
         // - replace the contents of the view with that element
         final RealmRecentChub recentChub = mDataset.get(position);
         holder.mTextView1.setText(recentChub.getDestination().getName());
-        holder.mTextView2.setText("");
+        List<String> names = new ArrayList<>(recentChub.getContacts().size());
+        for (RealmContact contact : recentChub.getContacts()) {
+            names.add(contact.getName());
+        }
+        String displayedNames = StringUtils.join(names, ", ");
+        holder.mTextView2.setText(displayedNames);
         holder.mImageView.setImageResource(R.drawable.ic_history);
         /*
         if (mLocationClickListener != null) {
