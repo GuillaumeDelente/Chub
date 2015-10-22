@@ -31,6 +31,7 @@
     <!-- CONTACTS PICKER-->
     <string name="contactpicker_pick_contacts">Send chub</string>
     <string name="no_contacts_selected">No contacts selected</string>
+    <string name="error_retry_destination">Ooops, please retry selecting the destination.</string>
 
 
 </resources>

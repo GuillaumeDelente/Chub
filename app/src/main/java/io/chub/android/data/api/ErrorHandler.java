@@ -5,6 +5,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
+import io.chub.android.BuildConfig;
 import io.chub.android.R;
 import retrofit.HttpException;
 
@@ -14,6 +15,9 @@ import retrofit.HttpException;
 public class ErrorHandler {
 
     public static void showError(Context context, Throwable throwable) {
+        if (BuildConfig.DEBUG) {
+            throwable.printStackTrace();
+        }
         int error;
         if (throwable instanceof HttpException) {
             error = R.string.http_error;

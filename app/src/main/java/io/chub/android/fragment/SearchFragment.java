@@ -32,7 +32,6 @@ import io.realm.Realm;
 import io.realm.RealmQuery;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -128,7 +127,17 @@ public class SearchFragment extends BaseFragment {
         // specify an adapter (see also next example)
         mPlacesAdapter = new SearchAdapter(new ArrayList<GoogleAddress>(0), activity);
         RealmQuery<RealmRecentChub> query = mRealm.where(RealmRecentChub.class);
-        mRecentAdapter = new RecentAdapter(query.findAll(), activity);
+        mRecentAdapter = new RecentAdapter(query.findAllSorted("lastUsed", false));
+        mRecentAdapter.setOnRecentChubClickListener(
+                new RecentAdapter.OnRecentChubClickListener() {
+                    @Override
+                    public void onRecentChubClicked(RealmRecentChub recentChub) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "Recent chub clicked");
+                        }
+                        ((ChubActivity) activity).onRecentChubSelected(recentChub);
+                    }
+                });
         mPlacesAdapter.setOnLocationClickListener(new SearchAdapter.LocationClickListener() {
             @Override
             public void onLocationClicked(GoogleAddress address) {

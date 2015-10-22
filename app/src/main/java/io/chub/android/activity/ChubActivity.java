@@ -33,9 +33,9 @@ import com.melnykov.fab.FloatingActionButton;
 import org.apache.http.HttpStatus;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -278,12 +278,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (requestCode == PICK_CONTACTS) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                createChub(data);
+                onContactSelected(data);
             }
         }
     }
 
-    private void createChub(final Intent data) {
+    private void onContactSelected(final Intent data) {
         final ArrayList<String> numbers = new ArrayList<>();
         final ArrayList<String> names = new ArrayList<>();
         if (data != null && data.hasExtra(ContactSelectionActivity.KEY_RESULT_NUMBERS)) {
@@ -299,7 +299,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     Toast.LENGTH_SHORT).show();
             return;
         }
-        Map body = new HashMap<>();
         if (mDestinationLatLng != null) {
             mRealm.beginTransaction();
             RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
@@ -315,8 +314,22 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 realmContact.setName(names.get(i));
                 lastChub.getContacts().add(realmContact);
             }
+            lastChub.setLastUsed(Calendar.getInstance().getTimeInMillis());
             mRealm.commitTransaction();
-            body.put("destination", mDestination);
+            createChub(mDestination, numbers);
+        } else {
+            createChub(numbers);
+        }
+    }
+
+    private void createChub(List<String> numbers) {
+        createChub(null, numbers);
+    }
+
+    private void createChub(Destination destination, final List<String> numbers) {
+        HashMap body = new HashMap(1);
+        if (destination != null) {
+            body.put("destination", destination);
         }
         mChubApi.createChub(body)
                 .subscribeOn(Schedulers.io())
@@ -347,14 +360,16 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 SmsManager smsManager = SmsManager.getDefault();
                                 for (String number : numbers) {
                                     if (BuildConfig.DEBUG) {
-                                        Log.e(TAG, "Getting number : " + number);
+                                        Log.d(TAG, "Would have sent text to : " + number);
+                                    } else {
+                                        smsManager.sendTextMessage(number, null, getChubText(chub),
+                                                null, null);
                                     }
-                                    smsManager.sendTextMessage(number, null, getChubText(chub),
-                                            null, null);
                                 }
                             }
                         });
     }
+
 
     private <T> Func1<Throwable, ? extends Observable<? extends T>> refreshTokenAndRetry(final Observable<T> toBeResumed) {
         return new Func1<Throwable, Observable<? extends T>>() {
@@ -565,6 +580,56 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mActionBarController.saveInstanceState(outState);
     }
 
+    public void onRecentChubSelected(final RealmRecentChub recentChub) {
+        final RealmDestination destination = recentChub.getDestination();
+        mSearchView.setText(destination.getName());
+        mSearchEditTextLayout.setCollapsedSearchBoxText(destination.getName());
+        mMapFragment.clearMarkers();
+        exitSearchUi();
+        final Location currentLocation = mMapFragment.getCurrentLocation();
+        //FIXME : pass current location instead of querying getCurrentLocation so
+        //we can ensure we have a location
+        if (currentLocation == null) {
+            Toast.makeText(this, R.string.error_retry_destination, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        mRealm.beginTransaction();
+        recentChub.setLastUsed(Calendar.getInstance().getTimeInMillis());
+        mRealm.commitTransaction();
+        mDestinationLatLng =
+                new LatLng(destination.getLatitude(), destination.getLongitude());
+        mMapFragment.displayFlags(mDestinationLatLng);
+        mDestination = new Destination(
+                destination.getPlaceId(),
+                destination.getName(),
+                mDestinationLatLng.latitude,
+                mDestinationLatLng.longitude);
+        getRouteObservable(mDestinationLatLng, currentLocation, "driving")
+                .subscribeOn(Schedulers.io())
+                .observeOn(mainThread())
+                .subscribe(new Subscriber<GoogleDirectionResponse<GoogleRoute>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        ErrorHandler.showError(ChubActivity.this, e);
+                    }
+
+                    @Override
+                    public void onNext(GoogleDirectionResponse<GoogleRoute> result) {
+                        mMapFragment.displayRoute(result.routes.get(0));
+                        List<String> numbers = new ArrayList<>(recentChub.getContacts().size());
+                        for (RealmContact contact : recentChub.getContacts()) {
+                            numbers.add(contact.getNumber());
+                        }
+                        createChub(mDestination, numbers);
+                    }
+                });
+    }
+
     public void onDestinationSelected(final GoogleAddress address) {
         mSearchView.setText(address.description);
         mSearchEditTextLayout.setCollapsedSearchBoxText(address.description);
@@ -573,11 +638,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         final Location currentLocation = mMapFragment.getCurrentLocation();
         //FIXME : pass current location instead of querying getCurrentLocation so
         //we can ensure we have a location
-        if (currentLocation == null)
+        if (currentLocation == null) {
+            Toast.makeText(this, R.string.error_retry_destination, Toast.LENGTH_SHORT).show();
             return;
+        }
         getGooglePlace(address.place_id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(mainThread())
                 .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
                         Observable<GoogleDirectionResponse<GoogleRoute>>>() {
                     @Override
@@ -586,15 +651,32 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         mDestinationLatLng =
                                 new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
                                         googlePlaceGooglePlaceResponse.result.geometry.location.lng);
-                        mMapFragment.displayFlags(mDestinationLatLng);
                         mDestination = new Destination(
                                 googlePlaceGooglePlaceResponse.result.id,
                                 googlePlaceGooglePlaceResponse.result.name,
                                 mDestinationLatLng.latitude,
                                 mDestinationLatLng.longitude);
-                        return getRouteObservable(mDestinationLatLng, currentLocation, "driving");
+                        return Observable.just(null)
+                                .flatMap(new Func1<Object, Observable<Void>>() {
+                                    @Override
+                                    public Observable<Void> call(Object o) {
+                                        mMapFragment.displayFlags(mDestinationLatLng);
+                                        return Observable.just(null);
+                                    }
+                                })
+                                .observeOn(mainThread())
+                                .subscribeOn(mainThread())
+                                .flatMap(new Func1<Void, Observable<GoogleDirectionResponse<GoogleRoute>>>() {
+                                    @Override
+                                    public Observable<GoogleDirectionResponse<GoogleRoute>> call(Void o) {
+                                        return getRouteObservable(mDestinationLatLng,
+                                                currentLocation, "driving");
+                                    }
+                                });
                     }
                 })
+                .subscribeOn(Schedulers.io())
+                .observeOn(mainThread())
                 .subscribe(new Subscriber<GoogleDirectionResponse<GoogleRoute>>() {
                     @Override
                     public void onCompleted() {

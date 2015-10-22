@@ -1,7 +1,5 @@
 package io.chub.android.adapter;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.chub.android.R;
-import io.chub.android.data.api.model.GoogleAddress;
 import io.chub.android.data.api.model.RealmContact;
 import io.chub.android.data.api.model.RealmRecentChub;
 import io.realm.RealmResults;
@@ -26,8 +23,7 @@ import io.realm.RealmResults;
 public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder> {
     private static final String TAG = "SearchAdapter";
     private RealmResults<RealmRecentChub> mDataset;
-    private Resources mResources;
-    private LocationClickListener mLocationClickListener;
+    private OnRecentChubClickListener mRecentChubClickListener;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -45,13 +41,12 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public RecentAdapter(RealmResults<RealmRecentChub> recentChubs, Context context) {
+    public RecentAdapter(RealmResults<RealmRecentChub> recentChubs) {
         mDataset = recentChubs;
-        mResources = context.getResources();
     }
 
-    public void setOnLocationClickListener(LocationClickListener clickListener) {
-        mLocationClickListener = clickListener;
+    public void setOnRecentChubClickListener(OnRecentChubClickListener clickListener) {
+        mRecentChubClickListener = clickListener;
     }
 
     // Create new views (invoked by the layout manager)
@@ -60,8 +55,17 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.address_row, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        final ViewHolder holder = new ViewHolder(v);
+        holder.mImageView.setImageResource(R.drawable.ic_history);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mRecentChubClickListener != null) {
+                    mRecentChubClickListener.onRecentChubClicked(mDataset.get(holder.getPosition()));
+                }
+            }
+        });
+        return holder;
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -77,19 +81,6 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
         }
         String displayedNames = StringUtils.join(names, ", ");
         holder.mTextView2.setText(displayedNames);
-        holder.mImageView.setImageResource(R.drawable.ic_history);
-        /*
-        if (mLocationClickListener != null) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mLocationClickListener.onLocationClicked(address);
-                }
-            });
-        } else {
-            holder.itemView.setOnClickListener(null);
-        }
-        */
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -98,7 +89,7 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
         return mDataset.size();
     }
 
-    public static interface LocationClickListener {
-        public void onLocationClicked(GoogleAddress address);
+    public interface OnRecentChubClickListener {
+        void onRecentChubClicked(RealmRecentChub recentChub);
     }
 }

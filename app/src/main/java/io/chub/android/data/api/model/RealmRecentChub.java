@@ -10,6 +10,7 @@ public class RealmRecentChub extends RealmObject {
 
     private RealmList<RealmContact> contacts;
     private RealmDestination destination;
+    private long lastUsed;
 
     public RealmList<RealmContact> getContacts() {
         return this.contacts;
@@ -25,5 +26,13 @@ public class RealmRecentChub extends RealmObject {
 
     public void setDestination(RealmDestination destination) {
         this.destination = destination;
+    }
+
+    public long getLastUsed() {
+        return lastUsed;
+    }
+
+    public void setLastUsed(long lastUsed) {
+        this.lastUsed = lastUsed;
     }
 }
