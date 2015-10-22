@@ -294,6 +294,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     Toast.LENGTH_SHORT).show();
             return;
         }
+        if (numbers.isEmpty()) {
+            Toast.makeText(ChubActivity.this, R.string.no_contacts_selected,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         Map body = new HashMap<>();
         if (mDestinationLatLng != null) {
             mRealm.beginTransaction();

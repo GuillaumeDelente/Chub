@@ -30,6 +30,7 @@
 
     <!-- CONTACTS PICKER-->
     <string name="contactpicker_pick_contacts">Send chub</string>
+    <string name="no_contacts_selected">No contacts selected</string>
 
 
 </resources>
