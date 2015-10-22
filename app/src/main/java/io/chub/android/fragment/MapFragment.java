@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
@@ -32,7 +33,10 @@ public class MapFragment extends BaseFragment {
     private static final String TAG = "MapFragment";
     private static final String SEARCH_FRAGMENT = "search_fragment";
     private GoogleMap mMap;
-    @InjectView(R.id.mapview) MapView mMapView;
+    private Polyline displayedRoute;
+
+    @InjectView(R.id.mapview)
+    MapView mMapView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,7 +66,6 @@ public class MapFragment extends BaseFragment {
                 .position(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()))
                 .anchor(0, 1)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_flag)));
-
         mMap.addMarker(new MarkerOptions()
                 .position(latLng)
                 .anchor(0, 1)
@@ -76,7 +79,10 @@ public class MapFragment extends BaseFragment {
         polylineOptions.addAll(PolyUtil.decode(googleRoute.overview_polyline.points));
         polylineOptions.width(getResources().getDimensionPixelSize(R.dimen.route_width));
         polylineOptions.color(getResources().getColor(R.color.route_color));
-        mMap.addPolyline(polylineOptions);
+        if (displayedRoute != null) {
+            displayedRoute.remove();
+        }
+        displayedRoute = mMap.addPolyline(polylineOptions);
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.builder()
                 .include(new LatLng(googleRoute.bounds.southwest.lat,
                         googleRoute.bounds.southwest.lng))
@@ -139,5 +145,6 @@ public class MapFragment extends BaseFragment {
         if (mMap == null)
             return;
         mMap.clear();
+        displayedRoute = null;
     }
 }

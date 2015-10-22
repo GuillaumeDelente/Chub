@@ -1,6 +1,8 @@
 package io.chub.android.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -131,11 +133,25 @@ public class SearchFragment extends BaseFragment {
         mRecentAdapter.setOnRecentChubClickListener(
                 new RecentAdapter.OnRecentChubClickListener() {
                     @Override
-                    public void onRecentChubClicked(RealmRecentChub recentChub) {
+                    public void onRecentChubClicked(final RealmRecentChub recentChub) {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "Recent chub clicked");
                         }
-                        ((ChubActivity) activity).onRecentChubSelected(recentChub);
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle(R.string.send_chub)
+                                .setMessage(R.string.send_chub_confirm)
+                                .setNegativeButton(R.string.nope, null)
+                                .setPositiveButton(getResources()
+                                                .getQuantityString(R.plurals.send_to_,
+                                                        recentChub.getContacts().size(),
+                                                        recentChub.getContacts().size()),
+                                        new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        ((ChubActivity) activity).onRecentChubSelected(recentChub);
+                                    }
+                                })
+                                .show();
                     }
                 });
         mPlacesAdapter.setOnLocationClickListener(new SearchAdapter.LocationClickListener() {

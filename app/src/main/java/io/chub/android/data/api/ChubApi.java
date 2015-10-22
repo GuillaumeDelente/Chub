@@ -37,4 +37,5 @@ public interface ChubApi {
     @POST("chubs/{chubId}/locations/") //
     Observable<List<ChubLocation>>
     postLocation(@Path("chubId") long chubId, @Body List<ChubLocation> locations);
+
 }

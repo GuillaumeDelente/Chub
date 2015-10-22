@@ -32,6 +32,13 @@
     <string name="contactpicker_pick_contacts">Send chub</string>
     <string name="no_contacts_selected">No contacts selected</string>
     <string name="error_retry_destination">Ooops, please retry selecting the destination.</string>
+    <string name="send_chub">Send Chub</string>
+    <string name="send_chub_confirm">Do you want to send this Chub?</string>
+    <string name="nope">Nope</string>
 
+    <plurals name="send_to_">
+        <item quantity="one">Send to %d contact</item>
+        <item quantity="other">Send to %d contacts</item>
+    </plurals>
 
 </resources>
