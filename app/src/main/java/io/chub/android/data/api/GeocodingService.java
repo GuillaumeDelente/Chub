@@ -42,8 +42,8 @@ public interface GeocodingService  {
 
     @GET("distancematrix/json") //
     Observable<GoogleDurationResponse>
-    getDuration(@Query("origin") String origin, //
-                @Query("destination") String destination, //
+    getDuration(@Query("origins") String origin, //
+                @Query("destinations") String destination, //
                 @Query("mode") String travelMode, //
                 @Query("key") String apiKey); //
 }
