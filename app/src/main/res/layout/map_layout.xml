@@ -1,5 +1,4 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
@@ -13,95 +12,78 @@
         android:layout_height="match_parent"
         android:clipChildren="false" />
 
+    <LinearLayout
+        android:id="@+id/bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/chub_blue"
+        android:paddingBottom="62dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/eta_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:paddingLeft="2dp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/transport_radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/car_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:layout_marginRight="9dp"
+                android:button="@drawable/ic_car_selector"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/transit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:button="@drawable/ic_transit_selector"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="9dp"/>
+
+            <RadioButton
+                android:id="@+id/bike_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:button="@drawable/ic_bike_selector"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="9dp" />
+
+            <RadioButton
+                android:id="@+id/walk_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:button="@drawable/ic_walk_selector"
+                android:background="@null"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="9dp" />
+        </RadioGroup>
+
+    </LinearLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
-
-        <RelativeLayout
-            android:id="@+id/bottom_layout"
-            android:layout_width="match_parent"
-            android:layout_height="96dp"
-            android:layout_gravity="bottom"
-            android:background="@color/chub_blue"
-            android:elevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/eta_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:paddingLeft="18dp"
-                    android:text="4 min"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <RadioGroup
-                    android:id="@+id/transport_radio_group"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingBottom="9dp"
-                    android:paddingTop="9dp">
-
-                    <RadioButton
-                        android:id="@+id/car_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:layout_marginLeft="18dp"
-                        android:layout_marginRight="9dp"
-                        android:button="@drawable/ic_car_selector"
-                        android:checked="true"/>
-
-                    <RadioButton
-                        android:id="@+id/transit_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:button="@drawable/ic_transit_selector"
-                        android:layout_marginLeft="18dp"
-                        android:layout_marginRight="9dp"/>
-
-                    <RadioButton
-                        android:id="@+id/bike_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:button="@drawable/ic_bike_selector"
-                        android:layout_marginLeft="18dp"
-                        android:layout_marginRight="9dp" />
-
-                    <RadioButton
-                        android:id="@+id/walk_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:button="@drawable/ic_walk_selector"
-                        android:background="@null"
-                        android:layout_marginLeft="18dp"
-                        android:layout_marginRight="9dp" />
-                </RadioGroup>
-
-            </LinearLayout>
-
-        </RelativeLayout>
-
-        <com.melnykov.fab.FloatingActionButton
-            android:id="@+id/share_location_fab"
-            android:layout_width="@dimen/fab_size"
-            android:layout_height="@dimen/fab_size"
-            android:layout_gravity="bottom|right"
-            android:layout_marginBottom="@dimen/fab_margin"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:src="@android:drawable/ic_menu_send" />
 
         <FrameLayout
             android:id="@+id/search_fragment_container"
@@ -123,4 +105,14 @@
         </android.support.v7.widget.Toolbar>
 
     </FrameLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/share_location_fab"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="@dimen/fab_margin"
+        android:layout_marginRight="@dimen/fab_margin"
+        android:src="@android:drawable/ic_menu_send" />
+
 </FrameLayout>

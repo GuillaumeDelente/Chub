@@ -4,10 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -30,7 +32,6 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.guillaumedelente.android.contacts.activities.ContactSelectionActivity;
 import com.jakewharton.rxbinding.widget.RxRadioGroup;
-import com.melnykov.fab.FloatingActionButton;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -742,9 +743,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     public void setupUi(boolean isTracking) {
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting floatingActionButton, is tracking " + isTracking);
-        if (isTracking) {
-            mShareLocationFab.setColorNormalResId(R.color.chub_red);
-            mShareLocationFab.setColorPressedResId(R.color.chub_dark_red);
+        if (isTracking || BuildConfig.DEBUG) {
+            mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.chub_red)));
+            mShareLocationFab.setRippleColor(getColor(R.color.chub_dark_red));
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -753,14 +754,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 }
             });
             if (ChubLocationService.getDestinationLatLng() != null) {
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
                 mBottomLayout.setVisibility(View.VISIBLE);
             }
         } else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             mBottomLayout.setVisibility(View.GONE);
-            mShareLocationFab.setColorNormalResId(R.color.chub_blue);
-            mShareLocationFab.setColorPressedResId(R.color.chub_dark_blue);
+            mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.chub_blue)));
+            mShareLocationFab.setRippleColor(getColor(R.color.chub_dark_blue));
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_send);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -1,5 +1,7 @@
 package io.chub.android.fragment;
 
+import android.app.Activity;
+import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -94,10 +96,16 @@ public class MapFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
+        final Activity activity = getActivity();
+        final Resources resources = activity.getResources();
         mMapView.onResume();
-        MapsInitializer.initialize(getActivity());
+        MapsInitializer.initialize(activity);
         mMap = mMapView.getMap();
         if (mMap != null) {
+            mMap.setPadding(0,
+                    resources.getDimensionPixelSize(R.dimen.map_padding_top),
+                    0,
+                    resources.getDimensionPixelOffset(R.dimen.navigation_bar_size));
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
