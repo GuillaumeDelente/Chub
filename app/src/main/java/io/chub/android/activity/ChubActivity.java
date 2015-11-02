@@ -8,6 +8,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -132,6 +135,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     UserPreferences mUserPreferences;
     @Inject
     Realm mRealm;
+    private int mBottomLayoutHeight = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -743,30 +747,59 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     public void setupUi(boolean isTracking) {
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting floatingActionButton, is tracking " + isTracking);
-        if (isTracking || BuildConfig.DEBUG) {
+        if (isTracking) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Window w = getWindow();
+                w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            }
             mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.chub_red)));
             mShareLocationFab.setRippleColor(getColor(R.color.chub_dark_red));
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ChubLocationService.stopLocationTracking(ChubActivity.this);
+                    setupUi(false);
+                    //ChubLocationService.stopLocationTracking(ChubActivity.this);
                 }
             });
-            if (ChubLocationService.getDestinationLatLng() != null) {
+            if (BuildConfig.DEBUG || ChubLocationService.getDestinationLatLng() != null) {
                 mBottomLayout.setVisibility(View.VISIBLE);
+                if (mBottomLayoutHeight == 0) {
+                    mBottomLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            mBottomLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            mBottomLayoutHeight = mBottomLayout.getHeight();
+                            setupUi(true);
+                        }
+                    });
+                }
+                FrameLayout.LayoutParams params =
+                        ((FrameLayout.LayoutParams) mShareLocationFab.getLayoutParams());
+                params.bottomMargin = mBottomLayout.getHeight() - mShareLocationFab.getHeight() / 2;
+                mMapFragment.setMapBottomPadding(mBottomLayout.getHeight());
             }
         } else {
-            mBottomLayout.setVisibility(View.GONE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Window w = getWindow();
+                w.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            }
+            mBottomLayout.setVisibility(View.INVISIBLE);
+            FrameLayout.LayoutParams params =
+                    ((FrameLayout.LayoutParams) mShareLocationFab.getLayoutParams());
+            params.bottomMargin = getResources().getDimensionPixelSize(R.dimen.fab_margin);
+            mMapFragment.resetMapBottomPadding();
             mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.chub_blue)));
             mShareLocationFab.setRippleColor(getColor(R.color.chub_dark_blue));
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_send);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    setupUi(true);
+                    /*
                     startActivityForResult(
                             new Intent(ChubActivity.this, ContactSelectionActivity.class),
-                            PICK_CONTACTS);
+                            PICK_CONTACTS);*/
                 }
             });
         }

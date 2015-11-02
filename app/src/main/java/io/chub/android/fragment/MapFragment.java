@@ -39,6 +39,7 @@ public class MapFragment extends BaseFragment {
 
     @InjectView(R.id.mapview)
     MapView mMapView;
+    private boolean initPadding = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -86,10 +87,10 @@ public class MapFragment extends BaseFragment {
         }
         displayedRoute = mMap.addPolyline(polylineOptions);
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.builder()
-                .include(new LatLng(googleRoute.bounds.southwest.lat,
-                        googleRoute.bounds.southwest.lng))
-                .include(new LatLng(googleRoute.bounds.northeast.lat,
-                        googleRoute.bounds.northeast.lng)).build(),
+                        .include(new LatLng(googleRoute.bounds.southwest.lat,
+                                googleRoute.bounds.southwest.lng))
+                        .include(new LatLng(googleRoute.bounds.northeast.lat,
+                                googleRoute.bounds.northeast.lng)).build(),
                 getResources().getDimensionPixelSize(R.dimen.map_bounds_padding)));
     }
 
@@ -97,15 +98,14 @@ public class MapFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         final Activity activity = getActivity();
-        final Resources resources = activity.getResources();
         mMapView.onResume();
         MapsInitializer.initialize(activity);
         mMap = mMapView.getMap();
         if (mMap != null) {
-            mMap.setPadding(0,
-                    resources.getDimensionPixelSize(R.dimen.map_padding_top),
-                    0,
-                    resources.getDimensionPixelOffset(R.dimen.navigation_bar_size));
+            if (initPadding) {
+                initPadding = false;
+                resetMapBottomPadding();
+            }
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
@@ -154,5 +154,20 @@ public class MapFragment extends BaseFragment {
             return;
         mMap.clear();
         displayedRoute = null;
+    }
+
+    public void setMapBottomPadding(int paddingBottom) {
+        if (mMap == null) {
+            return;
+        }
+        final Resources resources = getResources();
+        mMap.setPadding(0,
+                resources.getDimensionPixelSize(R.dimen.map_padding_top),
+                0,
+                paddingBottom);
+    }
+
+    public void resetMapBottomPadding() {
+        setMapBottomPadding(getResources().getDimensionPixelOffset(R.dimen.navigation_bar_size));
     }
 }
