@@ -752,8 +752,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 Window w = getWindow();
                 w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             }
-            mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.chub_red)));
-            mShareLocationFab.setRippleColor(getColor(R.color.chub_dark_red));
+            final Resources res = getResources();
+            mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(res.getColor(R.color.chub_red)));
+            mShareLocationFab.setRippleColor(res.getColor(R.color.chub_dark_red));
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -789,8 +790,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     ((FrameLayout.LayoutParams) mShareLocationFab.getLayoutParams());
             params.bottomMargin = getResources().getDimensionPixelSize(R.dimen.fab_margin);
             mMapFragment.resetMapBottomPadding();
-            mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.chub_blue)));
-            mShareLocationFab.setRippleColor(getColor(R.color.chub_dark_blue));
+            Resources res = getResources();
+            mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(res.getColor(R.color.chub_blue)));
+            mShareLocationFab.setRippleColor(res.getColor(R.color.chub_dark_blue));
             mShareLocationFab.setImageResource(android.R.drawable.ic_menu_send);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
