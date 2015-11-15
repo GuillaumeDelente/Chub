@@ -54,7 +54,7 @@
                 android:paddingLeft="2dp"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
             <RadioGroup
                 android:id="@+id/transport_radio_group"

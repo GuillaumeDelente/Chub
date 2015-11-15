@@ -1,6 +1,7 @@
 package io.chub.android.fragment;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
@@ -156,18 +157,20 @@ public class MapFragment extends BaseFragment {
         displayedRoute = null;
     }
 
-    public void setMapBottomPadding(int paddingBottom) {
+    public void setMapBottomPadding(int desiredPadding) {
         if (mMap == null) {
             return;
         }
         final Resources resources = getResources();
-        mMap.setPadding(0,
-                resources.getDimensionPixelSize(R.dimen.map_padding_top),
-                0,
-                paddingBottom);
+        if (desiredPadding == 0 && resources.getConfiguration().orientation ==
+                Configuration.ORIENTATION_PORTRAIT ) {
+            desiredPadding += resources.getDimensionPixelSize(R.dimen.navigation_bar_size);
+        }
+        mMap.setPadding(0, resources.getDimensionPixelSize(R.dimen.map_padding_top),
+                0, desiredPadding);
     }
 
     public void resetMapBottomPadding() {
-        setMapBottomPadding(getResources().getDimensionPixelOffset(R.dimen.navigation_bar_size));
+        setMapBottomPadding(0);
     }
 }
