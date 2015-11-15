@@ -485,6 +485,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Entering search UI");
         }
+        mShareLocationFab.setVisibility(View.GONE);
         mInSearchUi = true;
         final FragmentManager fragmentManager = getSupportFragmentManager();
         final FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -545,7 +546,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         final FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.remove(fragmentManager.findFragmentByTag(SEARCH_FRAGMENT));
         transaction.commit();
-
+        mShareLocationFab.setVisibility(View.VISIBLE);
         //mListsFragment.getView().animate().alpha(1).withLayer();
         mActionBarController.onSearchUiExited();
     }
@@ -751,7 +752,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             final Resources res = getResources();
             mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(res.getColor(R.color.chub_red)));
             mShareLocationFab.setRippleColor(res.getColor(R.color.chub_dark_red));
-            mShareLocationFab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+            mShareLocationFab.setImageResource(R.drawable.ic_close);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -793,7 +794,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             Resources res = getResources();
             mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(res.getColor(R.color.chub_blue)));
             mShareLocationFab.setRippleColor(res.getColor(R.color.chub_dark_blue));
-            mShareLocationFab.setImageResource(android.R.drawable.ic_menu_send);
+            mShareLocationFab.setImageResource(R.drawable.ic_send);
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

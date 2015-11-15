@@ -109,7 +109,7 @@
             android:layout_gravity="bottom|right"
             android:layout_marginBottom="@dimen/fab_margin"
             android:layout_marginRight="@dimen/fab_margin"
-            android:src="@android:drawable/ic_menu_send" />
+            android:src="@drawable/ic_send" />
 
     </FrameLayout>
 
