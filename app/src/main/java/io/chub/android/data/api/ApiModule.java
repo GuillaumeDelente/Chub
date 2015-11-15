@@ -36,7 +36,7 @@ import retrofit.RxJavaCallAdapterFactory;
 )
 public class ApiModule {
     public static final String GOOGLE_PRODUCTION_API_URL = "https://maps.googleapis.com/maps/api/";
-    public static final String API_PRODUCTION_API_URL = "https://www.chub.io/api";
+    public static final String API_PRODUCTION_API_URL = "https://www.chub.io/api/";
 
     @Provides @Singleton @GoogleRestAdapter
     String provideGoogleEndpoint() {

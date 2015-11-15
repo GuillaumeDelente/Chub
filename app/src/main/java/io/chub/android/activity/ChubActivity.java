@@ -748,10 +748,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Setting floatingActionButton, is tracking " + isTracking);
         if (isTracking) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Window w = getWindow();
-                w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            }
             final Resources res = getResources();
             mShareLocationFab.setBackgroundTintList(ColorStateList.valueOf(res.getColor(R.color.chub_red)));
             mShareLocationFab.setRippleColor(res.getColor(R.color.chub_dark_red));
@@ -760,10 +756,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 @Override
                 public void onClick(View view) {
                     setupUi(false);
-                    //ChubLocationService.stopLocationTracking(ChubActivity.this);
+                    ChubLocationService.stopLocationTracking(ChubActivity.this);
                 }
             });
-            if (BuildConfig.DEBUG || ChubLocationService.getDestinationLatLng() != null) {
+            if (ChubLocationService.getDestinationLatLng() != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    Window w = getWindow();
+                    w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                }
                 mBottomLayout.setVisibility(View.VISIBLE);
                 if (mBottomLayoutHeight == 0) {
                     mBottomLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -798,10 +798,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 @Override
                 public void onClick(View view) {
                     setupUi(true);
-                    /*
                     startActivityForResult(
                             new Intent(ChubActivity.this, ContactSelectionActivity.class),
-                            PICK_CONTACTS);*/
+                            PICK_CONTACTS);
                 }
             });
         }
