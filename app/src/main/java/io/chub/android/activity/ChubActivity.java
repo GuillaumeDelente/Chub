@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -178,10 +177,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         RxRadioGroup
                 .checkedChanges(transportGroup)
                 .skip(1)
-                .throttleLast(1000, TimeUnit.MILLISECONDS, Schedulers.io())
-                .map(new Func1<Integer, String>() {
+                /*
+                .throttleLast(1000, TimeUnit.MILLISECONDS)
+                .observeOn(mainThread())
+                */
+                .map(new Func1<Integer, DataHelper>() {
                     @Override
-                    public String call(Integer radioButtonId) {
+                    public DataHelper call(Integer radioButtonId) {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "On Checked Changed " + radioButtonId);
                         }
@@ -201,25 +203,27 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 travelMode = "driving";
                                 break;
                         }
-                        return travelMode;
+                        return new DataHelper(travelMode,
+                                new LatLng(currentChub.getDestination().getLatitude(),
+                                        currentChub.getDestination().getLongitude()),
+                                currentChub.getId());
                     }
                 })
                 .observeOn(Schedulers.io())
-                .flatMap(new Func1<String, Observable<Void>>() {
+                .flatMap(new Func1<DataHelper, Observable<Void>>() {
                     @Override
-                    public Observable<Void> call(final String travelMode) {
-
+                    public Observable<Void> call(final DataHelper data) {
                         final HashMap<String, String> body = new HashMap<>();
-                        body.put("travel_mode", travelMode);
+                        body.put("travel_mode", data.travelMode);
                         if (BuildConfig.DEBUG) {
-                            Log.d(TAG, "Changing transportation mode to " + travelMode);
+                            Log.d(TAG, "Changing transportation mode to " + data.travelMode);
                         }
                         return mChubApi
-                                .updateChub(currentChub.getId(), body)
+                                .updateChub(data.chubId, body)
                                 .flatMap(new Func1<Chub, Observable<Void>>() {
                                     @Override
                                     public Observable<Void> call(Chub chub) {
-                                        return displayRouteAndEtaObservable(mDestinationLatLng, travelMode);
+                                        return displayRouteAndEtaObservable(data.destination, data.travelMode);
                                     }
                                 })
                                 .onErrorResumeNext(new Func1<Throwable, Observable<Void>>() {
@@ -236,8 +240,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     }
                 })
                 .subscribeOn(mainThread())
-                .unsubscribeOn(Schedulers.io())
                 .observeOn(mainThread())
+                .unsubscribeOn(Schedulers.io())
                 .subscribe(new Subscriber<Void>() {
                                @Override
                                public void onCompleted() {
@@ -915,5 +919,17 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         return Observable.just(duration.getDuration());
                     }
                 });
+    }
+
+    private class DataHelper {
+        public String travelMode;
+        public LatLng destination;
+        public long chubId;
+
+        public DataHelper(String travelMode, LatLng destination, long chubId) {
+            this.travelMode = travelMode;
+            this.chubId = chubId;
+            this.destination = destination;
+        }
     }
 }
