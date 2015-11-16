@@ -25,7 +25,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +37,8 @@ import io.chub.android.R;
 import io.chub.android.activity.ChubActivity;
 import io.chub.android.data.api.ChubApi;
 import io.chub.android.data.api.model.ChubLocation;
+import io.chub.android.data.api.model.RealmChub;
+import io.realm.Realm;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -53,22 +54,20 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         GoogleApiClient.OnConnectionFailedListener {
     private static final String ACTION_START_TRACKING = "android.chub.io.service.action.TRACK_LOCATION";
     private static final String ACTION_STOP_TRACKING = "android.chub.io.service.action.STOP_TRACKING";
-    private static final String KEY_CHUB_ID = "chub_id";
-    private static final String KEY_DESTINATION_ID = "destination_id";
-    private static final String KEY_DESTINATION_LATLNG = "destination_latlng";
     private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 5000;
     private static final String TAG = "ChubLocationService";
     private static final int NOTIFICATION_ID = 1;
     private static final long LOCATIONS_POST_INTERVALL = 1000 * 10;
-    private static long CURRENT_CHUB_ID = -1;
-    private static String CURRENT_DESTINATION_ID = null;
-    private static LatLng CURRENT_DESTINATION_LATLNG = null;
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
-    private long mChubId;
+    private RealmChub currentChub;
     private final Handler mHandler = new Handler();
     private final IBinder mBinder = new ChubServiceBinder();
+    private final List<ChubLocation> mLocations = new ArrayList<>();
+    private Realm mRealm;
+    @Inject
+    ChubApi mChubApi;
     private final Runnable mPostLocationsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -90,16 +89,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         return mBinder;
     }
 
-    private final List<ChubLocation> mLocations = new ArrayList<>();
-    @Inject
-    ChubApi mChubApi;
-
-    public static void startLocationTracking(Context context, long chubId,
-                                             LatLng destinationLatLng) {
+    public static void startLocationTracking(Context context) {
         Intent intent = new Intent(context, ChubLocationService.class);
-        intent.putExtra(KEY_CHUB_ID, chubId);
-        //intent.putExtra(KEY_DESTINATION_ID, destinationId);
-        intent.putExtra(KEY_DESTINATION_LATLNG, destinationLatLng);
         intent.setAction(ACTION_START_TRACKING);
         context.startService(intent);
     }
@@ -111,15 +102,25 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        ((ChubApp) getApplication()).inject(this);
+        mRealm = Realm.getInstance(this);
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_START_TRACKING.equals(action)) {
-                handleActionTrackLocation(
-                        intent.getLongExtra(KEY_CHUB_ID, -1),
-                        intent.getStringExtra(KEY_DESTINATION_ID),
-                        (LatLng) intent.getParcelableExtra(KEY_DESTINATION_LATLNG));
+                RealmChub currentChub = mRealm.where(RealmChub.class).findFirst();
+                if (currentChub != null) {
+                    handleActionTrackLocation(currentChub);
+                } else {
+                    Bugsnag.notify(new IllegalStateException("Trying to start location " +
+                            "service but not Chub in DB"));
+                }
             } else if (ACTION_STOP_TRACKING.equals(action)) {
                 handleActionStopTracking();
             }
@@ -133,19 +134,17 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
         mHandler.removeCallbacks(mPostLocationsRunnable);
-        CURRENT_CHUB_ID = -1;
-        CURRENT_DESTINATION_ID = null;
-        CURRENT_DESTINATION_LATLNG = null;
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Resetting chub ID to " + CURRENT_CHUB_ID);
-        sendLocalBroadcast(false);
+        mRealm.beginTransaction();
+        currentChub.removeFromRealm();
+        mRealm.commitTransaction();
+        currentChub = null;
+        sendLocalBroadcast();
         stopForeground(true);
         stopSelf();
     }
 
-    private void sendLocalBroadcast(boolean isTracking) {
-        Intent intent = new Intent(ChubActivity.LOCATION_TRACKING_BROADCAST);
-        intent.putExtra(ChubActivity.TRACKING_LOCATION, isTracking);
+    private void sendLocalBroadcast() {
+        Intent intent = new Intent(ChubActivity.LOCATION_TRACKING_STOPPED_BROADCAST);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -153,16 +152,10 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionTrackLocation(long chubId, String destinationId,
-                                           LatLng destinationLatLng) {
+    private void handleActionTrackLocation(RealmChub currentChub) {
         if (BuildConfig.DEBUG)
             Log.d(TAG, "Start location tracking");
-        if (CURRENT_CHUB_ID != -1) {
-            if (BuildConfig.DEBUG)
-                Log.d(TAG, "Could not start service as a Chub is already being shared");
-            return;
-        }
-        ((ChubApp) getApplication()).inject(this);
+        this.currentChub = currentChub;
         mLocations.clear();
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                 .addApi(LocationServices.API)
@@ -176,14 +169,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         // Set the fastest update interval to 1 second
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        mChubId = chubId;
         mGoogleApiClient.connect();
-        CURRENT_CHUB_ID = chubId;
-        CURRENT_DESTINATION_ID = destinationId;
-        CURRENT_DESTINATION_LATLNG = destinationLatLng;
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Setting current chub ID to " + CURRENT_CHUB_ID);
-        sendLocalBroadcast(true);
         startForeground(NOTIFICATION_ID, buildNotification());
     }
 
@@ -237,8 +223,9 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             locations.addAll(mLocations);
             mLocations.clear();
         }
-        mLocationPostSubscription = mChubApi.postLocation(mChubId, locations)
+        mLocationPostSubscription = mChubApi.postLocation(currentChub.getId(), locations)
                 .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<List<ChubLocation>>() {
                     @Override
@@ -273,24 +260,13 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         //TODO handle connection failure by opening resolution activity
     }
 
-    public static long getChubId() {
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "sending back chub ID " + CURRENT_CHUB_ID);
-        return CURRENT_CHUB_ID;
-    }
-
-    public static String getDestinationId() {
-        return CURRENT_DESTINATION_ID;
-    }
-
-    public static LatLng getDestinationLatLng() {
-        return CURRENT_DESTINATION_LATLNG;
-    }
-
     @Override
     public void onDestroy() {
         if (mLocationPostSubscription != null)
             mLocationPostSubscription.unsubscribe();
+        if (currentChub != null) {
+            handleActionStopTracking();
+        }
         Bugsnag.notify(new Exception("ChubLocationService onDestroy"));
         super.onDestroy();
     }

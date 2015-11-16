@@ -62,8 +62,11 @@ import io.chub.android.data.api.model.GoogleDurationResponse;
 import io.chub.android.data.api.model.GooglePlace;
 import io.chub.android.data.api.model.GooglePlaceResponse;
 import io.chub.android.data.api.model.GoogleRoute;
+import io.chub.android.data.api.model.RealmChub;
+import io.chub.android.data.api.model.RealmChubs;
 import io.chub.android.data.api.model.RealmContact;
 import io.chub.android.data.api.model.RealmDestination;
+import io.chub.android.data.api.model.RealmDestinations;
 import io.chub.android.data.api.model.RealmRecentChub;
 import io.chub.android.fragment.MapFragment;
 import io.chub.android.fragment.SearchFragment;
@@ -93,8 +96,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private static final String KEY_SEARCH_QUERY = "search_query";
     private static final String KEY_IN_SEARCH_UI = "in_search_ui";
     private static final int PICK_CONTACTS = 1010;
-    public static final String LOCATION_TRACKING_BROADCAST = "location_tracking_broadcast";
-    public static final String TRACKING_LOCATION = "location_tracking";
+    public static final String LOCATION_TRACKING_STOPPED_BROADCAST = "location_tracking_broadcast";
     private ActionBarController mActionBarController;
     private EditText mSearchView;
     private SearchEditTextLayout mSearchEditTextLayout;
@@ -109,12 +111,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private LatLng mDestinationLatLng;
     private Destination mDestination;
     private ReactiveLocationProvider mLocationProvider;
+    private RealmChub currentChub;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(TRACKING_LOCATION)) {
-                setupUi(intent.getBooleanExtra(TRACKING_LOCATION, false));
-            }
+            currentChub = null;
+            setupUi(false);
         }
     };
 
@@ -133,7 +135,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     ChubApi mChubApi;
     @Inject
     UserPreferences mUserPreferences;
-    @Inject
     Realm mRealm;
     private int mBottomLayoutHeight = 0;
 
@@ -145,6 +146,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mToolbar = (Toolbar) findViewById(R.id.actionBar);
         final Resources resources = getResources();
         setSupportActionBar(mToolbar);
+        mRealm = Realm.getInstance(this);
         mParentLayout = (FrameLayout) findViewById(R.id.container);
         mActionBarHeight = resources.getDimensionPixelSize(R.dimen.action_bar_height_large);
         mSearchEditTextLayout = (SearchEditTextLayout)
@@ -213,7 +215,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                             Log.d(TAG, "Changing transportation mode to " + travelMode);
                         }
                         return mChubApi
-                                .updateChub(ChubLocationService.getChubId(), body)
+                                .updateChub(currentChub.getId(), body)
                                 .flatMap(new Func1<Chub, Observable<Void>>() {
                                     @Override
                                     public Observable<Void> call(Chub chub) {
@@ -234,6 +236,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     }
                 })
                 .subscribeOn(mainThread())
+                .unsubscribeOn(Schedulers.io())
                 .observeOn(mainThread())
                 .subscribe(new Subscriber<Void>() {
                                @Override
@@ -297,10 +300,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             mRealm.beginTransaction();
             RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
             RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
-            realmDestination.setName(mDestination.name);
-            realmDestination.setLatitude(mDestination.latitude);
-            realmDestination.setLongitude(mDestination.longitude);
-            realmDestination.setPlaceId(mDestination.id);
+            RealmDestinations.fromDestination(realmDestination, mDestination);
             lastChub.setDestination(realmDestination);
             for (int i = 0; i < numbers.size(); i++) {
                 RealmContact realmContact = mRealm.createObject(RealmContact.class);
@@ -328,6 +328,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mChubApi.createChub(body)
                 .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
                 .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
                 .observeOn(mainThread())
                 .subscribe(
                         new Subscriber<Chub>() {
@@ -347,10 +348,15 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
                             @Override
                             public void onNext(Chub chub) {
+                                mRealm.beginTransaction();
+                                mRealm.where(RealmChub.class).findAll().clear();
+                                RealmChub currentChub = mRealm.createObject(RealmChub.class);
+                                RealmChubs.fromChub(mRealm, currentChub, chub);
+                                mRealm.commitTransaction();
+                                ChubActivity.this.currentChub = currentChub;
+                                setupUi(true);
                                 ChubLocationService.startLocationTracking(
-                                        getApplicationContext(),
-                                        chub.id,
-                                        mDestinationLatLng);
+                                        getApplicationContext());
                                 SmsManager smsManager = SmsManager.getDefault();
                                 for (String number : numbers) {
                                     if (BuildConfig.DEBUG) {
@@ -604,6 +610,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         }
         displayRouteAndEtaObservable(mDestinationLatLng, "driving")
                 .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
                 .observeOn(mainThread())
                 .subscribe(new Subscriber<Void>() {
                     @Override
@@ -700,6 +707,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (!mUserPreferences.getAuthTokenPreference().isSet()) {
             mChubApi.createToken(new HashMap())
                     .subscribeOn(Schedulers.io())
+                    .unsubscribeOn(Schedulers.io())
                     .observeOn(mainThread())
                     .subscribe(
                             new Action1<AuthToken>() {
@@ -740,9 +748,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onResume() {
         super.onResume();
-        setupUi(ChubLocationService.getChubId() != -1);
+        currentChub = mRealm.where(RealmChub.class).findFirst();
+        setupUi(currentChub != null);
         LocalBroadcastManager.getInstance(this)
-                .registerReceiver(mMessageReceiver, new IntentFilter(LOCATION_TRACKING_BROADCAST));
+                .registerReceiver(mMessageReceiver, new IntentFilter(LOCATION_TRACKING_STOPPED_BROADCAST));
     }
 
     public void setupUi(boolean isTracking) {
@@ -756,11 +765,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    setupUi(false);
                     ChubLocationService.stopLocationTracking(ChubActivity.this);
                 }
             });
-            if (ChubLocationService.getDestinationLatLng() != null) {
+            if (currentChub.getDestination() != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     Window w = getWindow();
                     w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -780,6 +788,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                         ((FrameLayout.LayoutParams) mShareLocationFab.getLayoutParams());
                 params.bottomMargin = mBottomLayout.getHeight() - mShareLocationFab.getHeight() / 2;
                 mMapFragment.setMapBottomPadding(mBottomLayout.getHeight());
+            } else {
+                mBottomLayout.setVisibility(View.INVISIBLE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    Window w = getWindow();
+                    w.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                }
             }
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -798,7 +812,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    setupUi(true);
                     startActivityForResult(
                             new Intent(ChubActivity.this, ContactSelectionActivity.class),
                             PICK_CONTACTS);

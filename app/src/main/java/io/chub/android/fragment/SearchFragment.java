@@ -50,7 +50,6 @@ public class SearchFragment extends BaseFragment {
     @Inject
     @ApiKey
     String mGoogleApiKey;
-    @Inject
     Realm mRealm;
     private SearchAdapter mPlacesAdapter;
     private RecentAdapter mRecentAdapter;
@@ -85,6 +84,7 @@ public class SearchFragment extends BaseFragment {
         mCurrentQuery = query;
         mGeocodingService.getAddress(query, location, mGoogleApiKey)
                 .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .filter(new Func1<GoogleAddressResponse<GoogleAddress>, Boolean>() {
                     @Override
@@ -120,6 +120,7 @@ public class SearchFragment extends BaseFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         final Activity activity = getActivity();
+        mRealm = Realm.getInstance(activity);
         mLayoutManager = new LinearLayoutManager(activity);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(activity,
