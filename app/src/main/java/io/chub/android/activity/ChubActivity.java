@@ -236,12 +236,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                         ErrorHandler.showError(ChubActivity.this, throwable);
                                         return Observable.empty();
                                     }
-                                });
+                                })
+                                .unsubscribeOn(Schedulers.io());
                     }
                 })
                 .subscribeOn(mainThread())
                 .observeOn(mainThread())
-                .unsubscribeOn(Schedulers.io())
+                .unsubscribeOn(mainThread())
                 .subscribe(new Subscriber<Void>() {
                                @Override
                                public void onCompleted() {
@@ -354,8 +355,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                             public void onNext(Chub chub) {
                                 mRealm.beginTransaction();
                                 mRealm.where(RealmChub.class).findAll().clear();
-                                RealmChub currentChub = mRealm.createObject(RealmChub.class);
+                                RealmChub currentChub = new RealmChub();
                                 RealmChubs.fromChub(mRealm, currentChub, chub);
+                                mRealm.copyToRealm(currentChub);
                                 mRealm.commitTransaction();
                                 ChubActivity.this.currentChub = currentChub;
                                 setupUi(true);

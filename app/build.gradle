@@ -42,6 +42,10 @@ android {
 
 repositories {
     mavenLocal()
+    maven {
+        //For OkHttp interceptors
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
 }
 
 dependencies {
@@ -54,6 +58,7 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
     compile 'com.squareup.retrofit:adapter-rxjava-mock:2.0.0-beta2'
     compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2'
+    compile 'com.squareup.okhttp:logging-interceptor:2.6.0-SNAPSHOT'
     compile 'io.reactivex:rxandroid:1.0.1'
     compile 'io.realm:realm-android:0.84.2'
     compile 'com.jakewharton.timber:timber:2.5.0'

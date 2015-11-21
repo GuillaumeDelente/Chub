@@ -9,6 +9,7 @@ import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 
 import java.io.IOException;
 import java.util.Date;
@@ -17,6 +18,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.chub.android.BuildConfig;
 import io.chub.android.R;
 import io.chub.android.data.api.model.GmtDateTypeAdapter;
 import io.chub.android.data.api.model.Terms;
@@ -118,14 +120,20 @@ public class ApiModule {
                 return chain.proceed(originalRequest);
             }
         });
-        client.networkInterceptors().add(new LoggingInterceptor());
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY :
+                HttpLoggingInterceptor.Level.NONE);
+        client.networkInterceptors().add(logging);
         return client;
     }
 
     @Provides @Singleton @GoogleRestAdapter
     OkHttpClient provideGoogleOkHttpClient() {
         OkHttpClient client = new OkHttpClient();
-        client.networkInterceptors().add(new LoggingInterceptor());
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY :
+                HttpLoggingInterceptor.Level.NONE);
+        client.networkInterceptors().add(logging);
         return client;
     }
 }
