@@ -115,6 +115,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         @Override
         public void onReceive(Context context, Intent intent) {
             currentChub = null;
+            mMapFragment.clearMarkers();
+            mSearchEditTextLayout.clearSearch();
             setupUi(false);
         }
     };
@@ -840,8 +842,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 }
             }
         } else {
-            mMapFragment.clearMarkers();
-            mSearchEditTextLayout.clearSearch();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 Window w = getWindow();
                 w.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
