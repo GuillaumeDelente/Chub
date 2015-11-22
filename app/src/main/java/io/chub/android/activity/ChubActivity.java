@@ -116,7 +116,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         public void onReceive(Context context, Intent intent) {
             currentChub = null;
             mMapFragment.clearMarkers();
-            mSearchEditTextLayout.clearSearch();
+            mSearchEditTextLayout.setCollapsedSearchBoxText(null);
+            mSearchView.setText(null);
             setupUi(false);
         }
     };
@@ -721,6 +722,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (currentChub == null) {
             currentChub = mRealm.where(RealmChub.class).findFirst();
             if (currentChub != null && currentChub.getDestination() != null) {
+                mSearchEditTextLayout.setCollapsedSearchBoxText(currentChub.getDestination().getName());
                 displayDestination(currentChub.getDestination().getPlaceId(), currentChub.getTransportationMode());
             }
         }
