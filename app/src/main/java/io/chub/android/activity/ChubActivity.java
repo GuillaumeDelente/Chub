@@ -181,9 +181,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 .throttleLast(1000, TimeUnit.MILLISECONDS)
                 .observeOn(mainThread())
                 */
-                .map(new Func1<Integer, DataHelper>() {
+                .map(new Func1<Integer, String>() {
                     @Override
-                    public DataHelper call(Integer radioButtonId) {
+                    public String call(Integer radioButtonId) {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "On Checked Changed " + radioButtonId);
                         }
@@ -203,35 +203,50 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 travelMode = "driving";
                                 break;
                         }
-                        return new DataHelper(travelMode,
-                                new LatLng(currentChub.getDestination().getLatitude(),
-                                        currentChub.getDestination().getLongitude()),
-                                currentChub.getId());
+                        return travelMode;
                     }
                 })
-                .doOnNext(new Action1<DataHelper>() {
+                .doOnNext(new Action1<String>() {
                     @Override
-                    public void call(DataHelper dataHelper) {
-                        mRealm.beginTransaction();
-                        currentChub.setTransportationMode(dataHelper.travelMode);
-                        mRealm.commitTransaction();
+                    public void call(String travelMode) {
+                    }
+                })
+                .flatMap(new Func1<String, Observable<DataHelper>>() {
+                    @Override
+                    public Observable<DataHelper> call(String transportationMode) {
+                        if (currentChub != null) {
+                            mRealm.beginTransaction();
+                            currentChub.setTransportationMode(transportationMode);
+                            mRealm.commitTransaction();
+                            return Observable.just(new DataHelper(transportationMode,
+                                    new LatLng(currentChub.getDestination().getLatitude(),
+                                            currentChub.getDestination().getLongitude()),
+                                    currentChub.getId()));
+                        }
+                        return Observable.just(null);
                     }
                 })
                 .observeOn(Schedulers.io())
                 .flatMap(new Func1<DataHelper, Observable<Void>>() {
                     @Override
-                    public Observable<Void> call(final DataHelper data) {
+                    public Observable<Void> call(final DataHelper readOnlyChub) {
+                        //Cannot use realm objects outside of created thread, using the dataHelper
+                        //to avoid having to fetch the chub.
+                        if (readOnlyChub == null) {
+                            return Observable.just(null);
+                        }
                         final HashMap<String, String> body = new HashMap<>();
-                        body.put("travel_mode", data.travelMode);
+                        body.put("travel_mode", readOnlyChub.travelMode);
                         if (BuildConfig.DEBUG) {
-                            Log.d(TAG, "Changing transportation mode to " + data.travelMode);
+                            Log.d(TAG, "Changing transportation mode to " + readOnlyChub.travelMode);
                         }
                         return mChubApi
-                                .updateChub(data.chubId, body)
+                                .updateChub(readOnlyChub.chubId, body)
                                 .flatMap(new Func1<Chub, Observable<Void>>() {
                                     @Override
                                     public Observable<Void> call(Chub chub) {
-                                        return displayRouteAndEtaObservable(data.destination, data.travelMode);
+                                        return displayRouteAndEtaObservable(readOnlyChub.destination,
+                                                readOnlyChub.travelMode);
                                     }
                                 })
                                 .onErrorResumeNext(new Func1<Throwable, Observable<Void>>() {
@@ -314,6 +329,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             RealmRecentChub lastChub = mRealm.createObject(RealmRecentChub.class);
             RealmDestination realmDestination = mRealm.createObject(RealmDestination.class);
             RealmDestinations.fromDestination(realmDestination, mDestination);
+            realmDestination.setPlaceId(mDestination.id);
             lastChub.setDestination(realmDestination);
             for (int i = 0; i < numbers.size(); i++) {
                 RealmContact realmContact = mRealm.createObject(RealmContact.class);
@@ -508,6 +524,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Entering search UI");
         }
+        if (currentChub != null) {
+            //For now, block any operation on the destination while chubbing.
+            return;
+        }
         mShareLocationFab.setVisibility(View.GONE);
         mInSearchUi = true;
         final FragmentManager fragmentManager = getSupportFragmentManager();
@@ -622,7 +642,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         for (RealmContact contact : recentChub.getContacts()) {
             numbers.add(contact.getNumber());
         }
-        createChub(mDestination, numbers);
+        createChub(new Destination(destination.getPlaceId(),
+                destination.getName(),
+                destination.getLatitude(),
+                destination.getLongitude()), numbers);
     }
 
     public void onDestinationSelected(final GoogleAddress address) {
