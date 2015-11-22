@@ -615,7 +615,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mRealm.beginTransaction();
         recentChub.setLastUsed(Calendar.getInstance().getTimeInMillis());
         mRealm.commitTransaction();
-        displayDestination(destination.getPlaceId());
+        displayDestination(destination.getPlaceId(), "driving");
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Getting route from recent chub selection");
         }
@@ -638,7 +638,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             Toast.makeText(this, R.string.error_retry_destination, Toast.LENGTH_SHORT).show();
             return;
         }
-        displayDestination(address.place_id);
+        displayDestination(address.place_id, "driving");
     }
 
     @Override
@@ -693,13 +693,13 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (currentChub == null) {
             currentChub = mRealm.where(RealmChub.class).findFirst();
             if (currentChub != null && currentChub.getDestination() != null) {
-                displayDestination(currentChub.getDestination().getPlaceId());
+                displayDestination(currentChub.getDestination().getPlaceId(), currentChub.getTransportationMode());
             }
         }
         setupUi(currentChub != null);
     }
 
-    private void displayDestination(final String destinationId) {
+    private void displayDestination(final String destinationId, final String transportationMode) {
         getGooglePlace(destinationId)
                 .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
                         Observable<Void>>() {
@@ -730,7 +730,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                         if (BuildConfig.DEBUG) {
                                             Log.d(TAG, "Getting route from destination selection");
                                         }
-                                        return displayRouteAndEtaObservable(mDestinationLatLng, "driving");
+                                        return displayRouteAndEtaObservable(mDestinationLatLng, transportationMode);
                                     }
                                 });
                     }
@@ -753,9 +753,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     public void onNext(Void result) {
                     }
                 });
-        /*
-        if (currentChub != null && currentChub.getDestination() != null) {
-            final String transportationMode = currentChub.getTransportationMode();
             final int buttonId;
             switch (transportationMode) {
                 case ("transit"):
@@ -773,8 +770,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     break;
             }
             RxRadioGroup.checked(transportGroup).call(buttonId);
-        }
-        */
     }
 
     public void setupUi(boolean isTracking) {
