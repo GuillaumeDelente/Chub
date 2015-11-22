@@ -17,8 +17,8 @@
     <string name="choose_how_to_chub">How do you want to chub?</string>
 
     <!-- CHUB TEXT MESSAGES -->
-    <string name="chubbed_text_eta">I just chubbed you. Check out my ETA on %1$s</string>
-    <string name="chubbed_text_location">I just chubbed you. Check out my location on %1$s</string>
+    <string name="chubbed_text_eta">Track my ETA on %1$s</string>
+    <string name="chubbed_text_location">Track my location on %1$s</string>
 
     <!-- ERRORS -->
     <string name="network_error">Error reaching the server, please retry.</string>

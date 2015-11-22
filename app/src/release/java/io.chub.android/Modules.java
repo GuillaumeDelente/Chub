@@ -1,6 +1,4 @@
-package io.chub.android.chub;
-
-import io.chub.android.chub.ChubApp;
+package io.chub.android;
 
 final class Modules {
     static Object[] list(ChubApp app) {

@@ -45,3 +45,6 @@ library/coverage-error.log
 
 # Emacs
 *~
+
+#Keystore
+keystore-prod.jks

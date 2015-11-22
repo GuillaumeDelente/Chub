@@ -436,10 +436,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         boolean hasDestination = chub.destination != null;
         return hasDestination ?
                 getString(R.string.chubbed_text_eta,
-                        Uri.parse("http://chub.io/")
+                        Uri.parse("https://chub.io/")
                                 .buildUpon().appendPath(chub.publicId)) :
                 getString(R.string.chubbed_text_location,
-                        Uri.parse("http://chub.io/")
+                        Uri.parse("https://chub.io/")
                                 .buildUpon().appendPath(chub.publicId));
 
     }
