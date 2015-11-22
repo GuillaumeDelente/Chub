@@ -9,6 +9,8 @@ public class RealmChub extends RealmObject {
 
     private RealmDestination destination;
     private long id;
+    private String transportationMode;
+
 
     public RealmDestination getDestination() {
         return destination;
@@ -24,5 +26,13 @@ public class RealmChub extends RealmObject {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getTransportationMode() {
+        return transportationMode;
+    }
+
+    public void setTransportationMode(String transportationMode) {
+        this.transportationMode = transportationMode;
     }
 }

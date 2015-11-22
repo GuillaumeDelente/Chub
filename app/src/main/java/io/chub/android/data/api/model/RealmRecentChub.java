@@ -35,4 +35,5 @@ public class RealmRecentChub extends RealmObject {
     public void setLastUsed(long lastUsed) {
         this.lastUsed = lastUsed;
     }
+
 }

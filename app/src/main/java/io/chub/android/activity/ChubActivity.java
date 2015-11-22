@@ -209,6 +209,14 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 currentChub.getId());
                     }
                 })
+                .doOnNext(new Action1<DataHelper>() {
+                    @Override
+                    public void call(DataHelper dataHelper) {
+                        mRealm.beginTransaction();
+                        currentChub.setTransportationMode(dataHelper.travelMode);
+                        mRealm.commitTransaction();
+                    }
+                })
                 .observeOn(Schedulers.io())
                 .flatMap(new Func1<DataHelper, Observable<Void>>() {
                     @Override
@@ -325,7 +333,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         createChub(null, numbers);
     }
 
-    private void createChub(Destination destination, final List<String> numbers) {
+    private void createChub(final Destination destination, final List<String> numbers) {
         HashMap body = new HashMap(1);
         if (destination != null) {
             body.put("destination", destination);
@@ -357,6 +365,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                                 mRealm.where(RealmChub.class).findAll().clear();
                                 RealmChub currentChub = new RealmChub();
                                 RealmChubs.fromChub(mRealm, currentChub, chub);
+                                if (destination != null) {
+                                    //Place ID not being sent back from API
+                                    currentChub.getDestination().setPlaceId(destination.id);
+                                }
                                 mRealm.copyToRealm(currentChub);
                                 mRealm.commitTransaction();
                                 ChubActivity.this.currentChub = currentChub;
@@ -603,41 +615,15 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mRealm.beginTransaction();
         recentChub.setLastUsed(Calendar.getInstance().getTimeInMillis());
         mRealm.commitTransaction();
-        mDestinationLatLng =
-                new LatLng(destination.getLatitude(), destination.getLongitude());
-        mMapFragment.displayFlags(mDestinationLatLng);
-        mDestination = new Destination(
-                destination.getPlaceId(),
-                destination.getName(),
-                mDestinationLatLng.latitude,
-                mDestinationLatLng.longitude);
+        displayDestination(destination.getPlaceId());
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Getting route from recent chub selection");
         }
-        displayRouteAndEtaObservable(mDestinationLatLng, "driving")
-                .subscribeOn(Schedulers.io())
-                .unsubscribeOn(Schedulers.io())
-                .observeOn(mainThread())
-                .subscribe(new Subscriber<Void>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        ErrorHandler.showError(ChubActivity.this, e);
-                    }
-
-                    @Override
-                    public void onNext(Void route) {
-                        List<String> numbers = new ArrayList<>(recentChub.getContacts().size());
-                        for (RealmContact contact : recentChub.getContacts()) {
-                            numbers.add(contact.getNumber());
-                        }
-                        createChub(mDestination, numbers);
-                    }
-                });
+        List<String> numbers = new ArrayList<>(recentChub.getContacts().size());
+        for (RealmContact contact : recentChub.getContacts()) {
+            numbers.add(contact.getNumber());
+        }
+        createChub(mDestination, numbers);
     }
 
     public void onDestinationSelected(final GoogleAddress address) {
@@ -652,59 +638,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             Toast.makeText(this, R.string.error_retry_destination, Toast.LENGTH_SHORT).show();
             return;
         }
-        getGooglePlace(address.place_id)
-                .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
-                        Observable<Void>>() {
-                    @Override
-                    public Observable<Void>
-                    call(GooglePlaceResponse<GooglePlace> googlePlaceGooglePlaceResponse) {
-                        mDestinationLatLng =
-                                new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
-                                        googlePlaceGooglePlaceResponse.result.geometry.location.lng);
-                        mDestination = new Destination(
-                                googlePlaceGooglePlaceResponse.result.id,
-                                googlePlaceGooglePlaceResponse.result.name,
-                                mDestinationLatLng.latitude,
-                                mDestinationLatLng.longitude);
-                        return Observable.<Void>just(null)
-                                .observeOn(mainThread())
-                                .flatMap(new Func1<Void, Observable<Void>>() {
-                                    @Override
-                                    public Observable<Void> call(Void unused) {
-                                        mMapFragment.displayFlags(mDestinationLatLng);
-                                        return Observable.just(null);
-                                    }
-                                })
-                                .observeOn(Schedulers.io())
-                                .flatMap(new Func1<Void, Observable<Void>>() {
-                                    @Override
-                                    public Observable<Void> call(Void o) {
-                                        if (BuildConfig.DEBUG) {
-                                            Log.d(TAG, "Getting route from destination selection");
-                                        }
-                                        return displayRouteAndEtaObservable(mDestinationLatLng, "driving");
-                                    }
-                                });
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .unsubscribeOn(Schedulers.io())
-                .observeOn(mainThread())
-                .subscribe(new Subscriber<Void>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        ErrorHandler.showError(ChubActivity.this, e);
-                    }
-
-                    @Override
-                    public void onNext(Void result) {
-                    }
-                });
+        displayDestination(address.place_id);
     }
 
     @Override
@@ -754,10 +688,93 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onResume() {
         super.onResume();
-        currentChub = mRealm.where(RealmChub.class).findFirst();
-        setupUi(currentChub != null);
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mMessageReceiver, new IntentFilter(LOCATION_TRACKING_STOPPED_BROADCAST));
+        if (currentChub == null) {
+            currentChub = mRealm.where(RealmChub.class).findFirst();
+            if (currentChub != null && currentChub.getDestination() != null) {
+                displayDestination(currentChub.getDestination().getPlaceId());
+            }
+        }
+        setupUi(currentChub != null);
+    }
+
+    private void displayDestination(final String destinationId) {
+        getGooglePlace(destinationId)
+                .flatMap(new Func1<GooglePlaceResponse<GooglePlace>,
+                        Observable<Void>>() {
+                    @Override
+                    public Observable<Void>
+                    call(GooglePlaceResponse<GooglePlace> googlePlaceGooglePlaceResponse) {
+                        mDestinationLatLng =
+                                new LatLng(googlePlaceGooglePlaceResponse.result.geometry.location.lat,
+                                        googlePlaceGooglePlaceResponse.result.geometry.location.lng);
+                        mDestination = new Destination(
+                                destinationId,
+                                googlePlaceGooglePlaceResponse.result.name,
+                                mDestinationLatLng.latitude,
+                                mDestinationLatLng.longitude);
+                        return Observable.<Void>just(null)
+                                .observeOn(mainThread())
+                                .flatMap(new Func1<Void, Observable<Void>>() {
+                                    @Override
+                                    public Observable<Void> call(Void unused) {
+                                        mMapFragment.displayFlags(mDestinationLatLng);
+                                        return Observable.just(null);
+                                    }
+                                })
+                                .observeOn(Schedulers.io())
+                                .flatMap(new Func1<Void, Observable<Void>>() {
+                                    @Override
+                                    public Observable<Void> call(Void o) {
+                                        if (BuildConfig.DEBUG) {
+                                            Log.d(TAG, "Getting route from destination selection");
+                                        }
+                                        return displayRouteAndEtaObservable(mDestinationLatLng, "driving");
+                                    }
+                                });
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(mainThread())
+                .subscribe(new Subscriber<Void>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        ErrorHandler.showError(ChubActivity.this, e);
+                    }
+
+                    @Override
+                    public void onNext(Void result) {
+                    }
+                });
+        /*
+        if (currentChub != null && currentChub.getDestination() != null) {
+            final String transportationMode = currentChub.getTransportationMode();
+            final int buttonId;
+            switch (transportationMode) {
+                case ("transit"):
+                    buttonId = R.id.transit_button;
+                    break;
+                case ("bicycling"):
+                    buttonId = R.id.bike_button;
+                    break;
+                case ("walking"):
+                    buttonId = R.id.walk_button;
+                    break;
+                default:
+                case ("driving"):
+                    buttonId = R.id.car_button;
+                    break;
+            }
+            RxRadioGroup.checked(transportGroup).call(buttonId);
+        }
+        */
     }
 
     public void setupUi(boolean isTracking) {

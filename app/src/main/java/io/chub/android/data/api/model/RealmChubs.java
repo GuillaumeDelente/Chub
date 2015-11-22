@@ -13,6 +13,7 @@ public class RealmChubs {
             RealmDestination realmDestination = new RealmDestination();
             RealmDestinations.fromDestination(realmDestination, chub.destination);
             realmChub.setDestination(realmDestination);
+            realmChub.setTransportationMode(chub.travelMode);
         }
     }
 
