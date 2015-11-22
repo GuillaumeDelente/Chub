@@ -190,6 +190,10 @@ public class SearchEditTextLayout extends FrameLayout {
         mSearchTextView.setText(text);
     }
 
+    public void clearSearch() {
+        mCollapsedClearButton.performClick();
+    }
+
     public void expand(boolean animate, boolean requestFocus) {
         updateVisibility(true /* isExpand */);
 

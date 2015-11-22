@@ -168,8 +168,9 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         mSearchEditTextLayout.setOnClearButtonViewClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMapFragment != null)
+                if (mMapFragment != null && currentChub == null) {
                     mMapFragment.clearMarkers();
+                }
             }
         });
         mShareLocationFab = (FloatingActionButton) findViewById(R.id.share_location_fab);
@@ -460,6 +461,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (currentChub != null) {
+                //For now, block any operation on the destination while chubbing.
+                return;
+            }
             final String newText = s.toString();
             if (newText.equals(mSearchQuery)) {
                 // If the query hasn't changed (perhaps due to activity being destroyed
@@ -503,7 +508,7 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     private final View.OnClickListener mSearchViewOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (!isInSearchUi()) {
+            if (!isInSearchUi() && currentChub == null) {
                 mActionBarController.onSearchBoxTapped();
                 enterSearchUi(mSearchView.getText().toString());
             }
@@ -523,10 +528,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
 
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Entering search UI");
-        }
-        if (currentChub != null) {
-            //For now, block any operation on the destination while chubbing.
-            return;
         }
         mShareLocationFab.setVisibility(View.GONE);
         mInSearchUi = true;
@@ -671,19 +672,22 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                     .subscribeOn(Schedulers.io())
                     .unsubscribeOn(Schedulers.io())
                     .observeOn(mainThread())
-                    .subscribe(
-                            new Action1<AuthToken>() {
-                                @Override
-                                public void call(AuthToken authToken) {
-                                    mUserPreferences.getAuthTokenPreference().set(authToken.value);
-                                }
-                            },
-                            new Action1<Throwable>() {
-                                @Override
-                                public void call(Throwable throwable) {
-                                    //silently fail
-                                }
-                            });
+                    .subscribe(new Subscriber<AuthToken>() {
+                        @Override
+                        public void onCompleted() {
+
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onNext(AuthToken authToken) {
+                            mUserPreferences.getAuthTokenPreference().set(authToken.value);
+                        }
+                    });
         }
     }
 
@@ -836,6 +840,8 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 }
             }
         } else {
+            mMapFragment.clearMarkers();
+            mSearchEditTextLayout.clearSearch();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 Window w = getWindow();
                 w.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);

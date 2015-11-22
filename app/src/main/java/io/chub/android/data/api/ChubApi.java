@@ -29,10 +29,6 @@ public interface ChubApi {
     Observable<Chub>
     updateChub(@Path("chubId") long chubId, @Body Map map);
 
-    @POST("chubs/{chubId}/locations/") //
-    Observable<ChubLocation>
-    postLocation(@Path("chubId") long chubId, @Body ChubLocation location);
-
 
     @POST("chubs/{chubId}/locations/") //
     Observable<List<ChubLocation>>

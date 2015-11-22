@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +40,7 @@ import io.chub.android.data.api.ChubApi;
 import io.chub.android.data.api.model.ChubLocation;
 import io.chub.android.data.api.model.RealmChub;
 import io.realm.Realm;
+import retrofit.HttpException;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -135,7 +137,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
             mGoogleApiClient.disconnect();
         mHandler.removeCallbacks(mPostLocationsRunnable);
         mRealm.beginTransaction();
-        currentChub.removeFromRealm();
+        mRealm.where(RealmChub.class).findAll().clear();
         mRealm.commitTransaction();
         currentChub = null;
         sendLocalBroadcast();
@@ -235,9 +237,16 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
 
                     @Override
                     public void onError(Throwable e) {
-                        Toast.makeText(getApplicationContext(),
-                                "Error on postLocation",
-                                Toast.LENGTH_SHORT).show();
+                        if (e instanceof HttpException) {
+                            if (((HttpException) e).code() == HttpURLConnection.HTTP_BAD_METHOD) {
+                                handleActionStopTracking();
+                            }
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Toast.makeText(getApplicationContext(),
+                                    "Error on postLocation",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                         //Failed to post locations, re-add failed locations
                         //to the buffer
                         mLocations.addAll(locations);
