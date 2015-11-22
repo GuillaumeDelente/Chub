@@ -10,7 +10,7 @@ public class RealmChubs {
     public static void fromChub(Realm realm, RealmChub realmChub, Chub chub) {
         realmChub.setId(chub.id);
         if (chub.destination != null) {
-            RealmDestination realmDestination = new RealmDestination();
+            RealmDestination realmDestination = realm.createObject(RealmDestination.class);
             RealmDestinations.fromDestination(realmDestination, chub.destination);
             realmChub.setDestination(realmDestination);
             realmChub.setTransportationMode(chub.travelMode);

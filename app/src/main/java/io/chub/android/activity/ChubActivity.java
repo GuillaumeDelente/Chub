@@ -363,13 +363,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                             public void onNext(Chub chub) {
                                 mRealm.beginTransaction();
                                 mRealm.where(RealmChub.class).findAll().clear();
-                                RealmChub currentChub = new RealmChub();
+                                RealmChub currentChub = mRealm.createObject(RealmChub.class);
                                 RealmChubs.fromChub(mRealm, currentChub, chub);
                                 if (destination != null) {
                                     //Place ID not being sent back from API
                                     currentChub.getDestination().setPlaceId(destination.id);
                                 }
-                                mRealm.copyToRealm(currentChub);
                                 mRealm.commitTransaction();
                                 ChubActivity.this.currentChub = currentChub;
                                 setupUi(true);
