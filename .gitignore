@@ -48,3 +48,4 @@ library/coverage-error.log
 
 #Keystore
 keystore-prod.jks
+keystore.properties

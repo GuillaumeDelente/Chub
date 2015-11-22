@@ -10,26 +10,21 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.chub.android.R;
-import io.chub.android.data.api.ApiModule;
 
 /**
- * Created by guillaume on 11/9/14.
+ * Created by guillaume on 11/22/15.
  */
-
 @Module(
-        includes = {
-                ApiModule.class,
-                UserModule.class,
-        },
         complete = false,
-        library = true
+        library = true,
+        overrides = true
 )
-public class DataModule {
+public final class DebugDataModule {
 
     @Provides
     @Singleton
     Tracker provideGoogleAnalyticsTracker(Application app) {
-        return GoogleAnalytics.getInstance(app).newTracker(R.xml.prod_tracker);
+        return GoogleAnalytics.getInstance(app).newTracker(R.xml.dev_tracker);
     }
 
 }

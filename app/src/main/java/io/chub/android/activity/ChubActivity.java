@@ -32,6 +32,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.maps.model.LatLng;
 import com.guillaumedelente.android.contacts.activities.ContactSelectionActivity;
 import com.jakewharton.rxbinding.widget.RxRadioGroup;
@@ -137,12 +139,19 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     ChubApi mChubApi;
     @Inject
     UserPreferences mUserPreferences;
+    @Inject
+    Tracker googleAnalytics;
     Realm mRealm;
     private int mBottomLayoutHeight = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        googleAnalytics.send(new HitBuilders.EventBuilder()
+                .setCategory("Test")
+                .setAction("Test")
+                .setLabel("Test")
+                .build());
         setContentView(R.layout.map_layout);
         ButterKnife.inject(this);
         mToolbar = (Toolbar) findViewById(R.id.actionBar);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="io.chub.android">
+    package="io.chub.android">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -28,7 +28,7 @@
 
         <meta-data
             android:name="com.bugsnag.android.API_KEY"
-            android:value="fdabc41af39e39fb6630278bdcb29589"/>
+            android:value="fdabc41af39e39fb6630278bdcb29589" />
 
         <activity
             android:name=".activity.ChubActivity"
@@ -41,26 +41,48 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".activity.ShareActivity">
+        <activity android:name=".activity.ShareActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.ChubActivity" />
         </activity>
         <activity
             android:name="com.guillaumedelente.android.contacts.activities.ContactSelectionActivity"
-            android:label="@string/launcherActivityLabel"
-            android:theme="@style/ContactPickerTheme"
-            android:launchMode="singleTop"
             android:clearTaskOnLaunch="true"
+            android:label="@string/launcherActivityLabel"
+            android:launchMode="singleTop"
+            android:theme="@style/ContactPickerTheme"
             android:uiOptions="splitActionBarWhenNarrow"
-            android:windowSoftInputMode="adjustResize">
-        </activity>
+            android:windowSoftInputMode="adjustResize"/>
 
         <service
             android:name=".service.ChubLocationService"
-            android:exported="false" >
-        </service>
+            android:exported="false"/>
+
+        <!-- Optionally, register AnalyticsReceiver and AnalyticsService to support background
+     dispatching on non-Google Play devices -->
+        <receiver
+            android:name="com.google.android.gms.analytics.AnalyticsReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
+            </intent-filter>
+        </receiver>
+        <service
+            android:name="com.google.android.gms.analytics.AnalyticsService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Optionally, register CampaignTrackingReceiver and CampaignTrackingService to enable
+             installation campaign reporting -->
+        <receiver
+            android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+        <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
     </application>
 
 </manifest>
