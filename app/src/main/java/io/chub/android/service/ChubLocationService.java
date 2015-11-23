@@ -300,7 +300,6 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (currentChub != null) {
             handleActionStopTracking();
         }
-        Bugsnag.notify(new Exception("ChubLocationService onDestroy"));
         super.onDestroy();
     }
 }
