@@ -147,11 +147,6 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        googleAnalytics.send(new HitBuilders.EventBuilder()
-                .setCategory("Test")
-                .setAction("Test")
-                .setLabel("Test")
-                .build());
         setContentView(R.layout.map_layout);
         ButterKnife.inject(this);
         mToolbar = (Toolbar) findViewById(R.id.actionBar);
@@ -222,6 +217,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 .doOnNext(new Action1<String>() {
                     @Override
                     public void call(String travelMode) {
+                        googleAnalytics.send(new HitBuilders.EventBuilder()
+                                .setCategory("Chub")
+                                .setAction("Change transport mode")
+                                .setLabel(travelMode)
+                                .build());
                     }
                 })
                 .flatMap(new Func1<String, Observable<DataHelper>>() {
@@ -367,6 +367,12 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (destination != null) {
             body.put("destination", destination);
         }
+        googleAnalytics.send(new HitBuilders.EventBuilder()
+                .setCategory("Chub")
+                .setAction("Start chub")
+                .setLabel(destination == null ? "" : destination.name)
+                .setValue(numbers.size())
+                .build());
         mChubApi.createChub(body)
                 .onErrorResumeNext(refreshTokenAndRetry(mChubApi.createChub(body)))
                 .subscribeOn(Schedulers.io())
@@ -541,6 +547,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Entering search UI");
         }
+        googleAnalytics.send(new HitBuilders.EventBuilder()
+                .setCategory("Search")
+                .setAction("Enter search")
+                .setLabel(query)
+                .build());
         mShareLocationFab.setVisibility(View.GONE);
         mInSearchUi = true;
         final FragmentManager fragmentManager = getSupportFragmentManager();
@@ -674,6 +685,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             return;
         }
         displayDestination(address.place_id, "driving");
+        googleAnalytics.send(new HitBuilders.EventBuilder()
+                .setCategory("Search")
+                .setAction("Destination set")
+                .setLabel(address.description)
+                .build());
     }
 
     @Override
@@ -823,6 +839,11 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
                 @Override
                 public void onClick(View view) {
                     ChubLocationService.stopLocationTracking(ChubActivity.this);
+                    googleAnalytics.send(new HitBuilders.EventBuilder()
+                            .setCategory("Chub")
+                            .setAction("Stop chub")
+                            .setLabel("From fab")
+                            .build());
                 }
             });
             if (currentChub.getDestination() != null) {
@@ -869,6 +890,10 @@ public class ChubActivity extends BaseActivity implements ActionBarController.Ac
             mShareLocationFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    googleAnalytics.send(new HitBuilders.EventBuilder()
+                            .setCategory("Contacts")
+                            .setAction("Enter contacts")
+                            .build());
                     startActivityForResult(
                             new Intent(ChubActivity.this, ContactSelectionActivity.class),
                             PICK_CONTACTS);

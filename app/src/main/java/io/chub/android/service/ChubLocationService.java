@@ -20,6 +20,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.bugsnag.android.Bugsnag;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -61,6 +63,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private static final String TAG = "ChubLocationService";
     private static final int NOTIFICATION_ID = 1;
     private static final long LOCATIONS_POST_INTERVALL = 1000 * 10;
+    private static final String FROM_NOTIFICATION = "From notification";
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private RealmChub currentChub;
@@ -70,6 +73,8 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
     private Realm mRealm;
     @Inject
     ChubApi mChubApi;
+    @Inject
+    Tracker analytics;
     private final Runnable mPostLocationsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -116,6 +121,10 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_START_TRACKING.equals(action)) {
+                analytics.send(new HitBuilders.EventBuilder()
+                        .setCategory("Location service")
+                        .setAction("Start")
+                        .build());
                 RealmChub currentChub = mRealm.where(RealmChub.class).findFirst();
                 if (currentChub != null) {
                     handleActionTrackLocation(currentChub);
@@ -124,6 +133,15 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                             "service but not Chub in DB"));
                 }
             } else if (ACTION_STOP_TRACKING.equals(action)) {
+                analytics.send(new HitBuilders.EventBuilder()
+                        .setCategory("Chub")
+                        .setAction("Stop chub")
+                        .setLabel("From fab")
+                        .build());
+                analytics.send(new HitBuilders.EventBuilder()
+                        .setCategory("Location service")
+                        .setAction("Stop")
+                        .build());
                 handleActionStopTracking();
             }
         }
@@ -179,6 +197,7 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
         Context context = getApplicationContext();
         Intent dismissIntent = new Intent(this, ChubLocationService.class);
         dismissIntent.setAction(ACTION_STOP_TRACKING);
+        dismissIntent.putExtra(FROM_NOTIFICATION, true);
         PendingIntent stopIntent = PendingIntent.getService(this, 0, dismissIntent, 0);
 
         Intent resultIntent = new Intent(this, ChubActivity.class);
@@ -240,6 +259,11 @@ public class ChubLocationService extends Service implements GoogleApiClient.Conn
                         if (e instanceof HttpException) {
                             if (((HttpException) e).code() == HttpURLConnection.HTTP_BAD_METHOD) {
                                 handleActionStopTracking();
+                                analytics.send(new HitBuilders.EventBuilder()
+                                        .setCategory("Chub")
+                                        .setAction("Stop chub")
+                                        .setLabel("At destination")
+                                        .build());
                             }
                         }
                         if (BuildConfig.DEBUG) {
